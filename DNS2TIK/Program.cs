@@ -5,11 +5,13 @@
         public static Listener Listener;
         public static Forwarder Forwarder;
         public static Responder Responder;
+        public static Parser Parser;
         public static void Main(string[] args)
         {
             Listener = new Listener();
             Forwarder = new Forwarder();
             Responder = new Responder();
+            Parser = new Parser();
             Listener.RecievedRequestData += Listener_RecievedRequestData;
             Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
             Console.ReadLine();
