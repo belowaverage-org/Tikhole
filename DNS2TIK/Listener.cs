@@ -6,7 +6,7 @@ namespace DNS2TIK
     public class Listener
     {
         public UdpClient Client = new();
-        public event EventHandler<RecievedDataEventArgs> RecievedData;
+        public event EventHandler<RecievedRequestDataEventArgs>? RecievedRequestData;
         public IPEndPoint IPEndPoint = new(IPAddress.Any, 53);
         public Listener()
         {
@@ -16,15 +16,21 @@ namespace DNS2TIK
             {
                 while (Client != null)
                 {
-                    RecievedDataEventArgs e = new();
-                    e.Bytes = Client.Receive(ref IPEndPoint);
-                    RecievedData?.Invoke(null, e);
+                    IPEndPoint? ipEndPoint = null;
+                    byte[] bytes = Client.Receive(ref ipEndPoint);
+                    RecievedRequestData?.Invoke(null, new(ipEndPoint, bytes));
                 }
             });
         }
     }
-    public class RecievedDataEventArgs : EventArgs
+    public class RecievedRequestDataEventArgs : EventArgs
     {
-        public byte[] Bytes { get; set; }
+        public IPEndPoint IPEndPoint;
+        public byte[] Bytes;
+        public RecievedRequestDataEventArgs(IPEndPoint IPEndPoint, byte[] Bytes)
+        {
+            this.IPEndPoint = IPEndPoint;
+            this.Bytes = Bytes;
+        }
     }
 }
