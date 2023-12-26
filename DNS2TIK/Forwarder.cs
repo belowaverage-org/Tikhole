@@ -6,7 +6,7 @@ namespace DNS2TIK
     public class Forwarder
     {
         public IPEndPoint DNSServer = new(IPAddress.Parse("9.9.9.9"), 53);
-        public event EventHandler<RecievedResponseDataEventArgs> RecievedResponseData;
+        public event EventHandler<RecievedResponseDataEventArgs>? RecievedResponseData;
         public Forwarder()
         {
             Program.Listener.RecievedRequestData += Listener_RecievedRequestData;
@@ -20,7 +20,7 @@ namespace DNS2TIK
             udpClient.Send(e.Bytes);
             byte[] responseBytes = udpClient.Receive(ref responseEndPoint);
             udpClient.Close();
-            RecievedResponseData?.Invoke(null, new(e, responseBytes));
+            _ = Task.Run(() => RecievedResponseData?.Invoke(null, new(e, responseBytes)));
         }
     }
     public class RecievedResponseDataEventArgs : EventArgs
