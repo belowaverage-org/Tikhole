@@ -2,16 +2,16 @@
 {
     public class Program
     {
+        public static Listener Listener = new();
         public static void Main(string[] args)
         {
-            Listener Listener = new();
             Listener.RecievedData += Listener_RecievedData;
             Console.ReadLine();
         }
 
-        private static void Listener_RecievedData(object? sender, EventArgs e)
+        private static void Listener_RecievedData(object? sender, RecievedDataEventArgs e)
         {
-            Console.WriteLine("Got data");
+            Console.WriteLine(BitConverter.ToString(e.Bytes));
         }
     }
 }
