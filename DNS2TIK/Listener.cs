@@ -18,7 +18,7 @@ namespace DNS2TIK
                 {
                     IPEndPoint? ipEndPoint = null;
                     byte[] bytes = Client.Receive(ref ipEndPoint);
-                    RecievedRequestData?.Invoke(null, new(ipEndPoint, bytes));
+                    _ = Task.Run(() => RecievedRequestData?.Invoke(null, new(ipEndPoint, bytes)));
                 }
             });
         }
