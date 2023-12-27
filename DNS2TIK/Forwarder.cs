@@ -5,7 +5,7 @@ namespace DNS2TIK
 {
     public class Forwarder
     {
-        public IPEndPoint DNSServer = new(IPAddress.Parse("9.9.9.9"), 53);
+        public IPEndPoint DNSServer = new(IPAddress.Parse("1.1.1.1"), 53);
         public event EventHandler<RecievedResponseDataEventArgs>? RecievedResponseData;
         public Forwarder()
         {

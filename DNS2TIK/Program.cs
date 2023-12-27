@@ -36,7 +36,7 @@ namespace DNS2TIK
                 if (answer.Type == DNSType.CNAME)
                 {
                     int index = 0;
-                    Console.WriteLine("        Data: " + answer.Data.ToLabelsString(ref index));
+                    //Console.WriteLine("        Data: " + answer.Data.ToLabelsString(ref index));
                 }
                 if (answer.Type == DNSType.A || answer.Type == DNSType.AAAA)
                 {
