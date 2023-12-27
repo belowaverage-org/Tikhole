@@ -7,43 +7,40 @@
         {
             Program.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
         }
-
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {
             int index = 12;
-            DNSPacket response = new()
+            DNSPacket packet = new()
             {
-                Questions = new DNSQuestionRecord[e.Bytes.ToUShort(4)],
-                Answers = new DNSResourceRecord[e.Bytes.ToUShort(6)]
+                Questions = new DNSQuestionRecord[e.Data.ToUShort(4)],
+                Answers = new DNSResourceRecord[e.Data.ToUShort(6)]
             };
-
-            for (int i = 0; i < response.Questions.Length; i++)
+            for (int i = 0; i < packet.Questions.Length; i++)
             {
-                response.Questions[i].Name = e.Bytes.ToLabelsString(ref index);
-                response.Questions[i].Type = (DNSType)e.Bytes.ToUShort(index + 1);
-                response.Questions[i].Class = (DNSClass)e.Bytes.ToUShort(index + 3);
+                packet.Questions[i].Name = e.Data.ToLabelsString(ref index);
+                packet.Questions[i].Type = (DNSType)e.Data.ToUShort(index + 1);
+                packet.Questions[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
                 index += 5;
             }
-
-            for (int i = 0; i < response.Answers.Length; i++)
+            for (int i = 0; i < packet.Answers.Length; i++)
             {
-                response.Answers[i].Name = e.Bytes.ToLabelsString(ref index);
-                response.Answers[i].Type = (DNSType)e.Bytes.ToUShort(index + 1);
-                response.Answers[i].Class = (DNSClass)e.Bytes.ToUShort(index + 3);
-                response.Answers[i].TimeToLive = (int)e.Bytes.ToUInt(index + 5);
-                response.Answers[i].Data = new byte[e.Bytes.ToUShort(index + 9)];
+                packet.Answers[i].Name = e.Data.ToLabelsString(ref index);
+                packet.Answers[i].Type = (DNSType)e.Data.ToUShort(index + 1);
+                packet.Answers[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
+                packet.Answers[i].TimeToLive = (int)e.Data.ToUInt(index + 5);
+                packet.Answers[i].Data = new byte[e.Data.ToUShort(index + 9)];
                 index += 11;
-                for (int di = 0; di < response.Answers[i].Data.Length; di++)
+                for (int di = 0; di < packet.Answers[i].Data.Length; di++)
                 {
-                    response.Answers[i].Data[di] = e.Bytes[index++];
+                    packet.Answers[i].Data[di] = e.Data[index++];
                 }
             }
-
-            _ = Task.Run(() => ParsedResponseData?.Invoke(null, new() { DNSPacket = response }));
+            _ = Task.Run(() => ParsedResponseData?.Invoke(null, new() {RecievedResponseData = e, DNSPacket = packet }));
         }
     }
     public class ParsedResponseDataEventArgs : EventArgs
     {
+        public required RecievedResponseDataEventArgs RecievedResponseData;
         public required DNSPacket DNSPacket;
     }
     public struct DNSPacket
