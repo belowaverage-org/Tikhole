@@ -30,6 +30,7 @@
                 packet.Answers[i].TimeToLive = (int)e.Data.ToUInt(index + 5);
                 packet.Answers[i].Data = new byte[e.Data.ToUShort(index + 9)];
                 index += 11;
+                packet.Answers[i].DataIndex = index;
                 for (int di = 0; di < packet.Answers[i].Data.Length; di++)
                 {
                     packet.Answers[i].Data[di] = e.Data[index++];
@@ -60,6 +61,7 @@
         public required DNSType Type;
         public required DNSClass Class;
         public required int TimeToLive;
+        public required int DataIndex;
         public required byte[] Data;
     }
     public enum DNSType

@@ -35,8 +35,8 @@ namespace DNS2TIK
                 Console.WriteLine("        TTL: " + answer.TimeToLive);
                 if (answer.Type == DNSType.CNAME)
                 {
-                    int index = 0;
-                    //Console.WriteLine("        Data: " + answer.Data.ToLabelsString(ref index));
+                    int index = answer.DataIndex;
+                    Console.WriteLine("        Data: " + e.RecievedResponseData.Data.ToLabelsString(ref index));
                 }
                 if (answer.Type == DNSType.A || answer.Type == DNSType.AAAA)
                 {
