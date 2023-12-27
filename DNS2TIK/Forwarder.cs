@@ -20,17 +20,12 @@ namespace DNS2TIK
             udpClient.Send(e.Bytes);
             byte[] responseBytes = udpClient.Receive(ref responseEndPoint);
             udpClient.Close();
-            _ = Task.Run(() => RecievedResponseData?.Invoke(null, new(e, responseBytes)));
+            _ = Task.Run(() => RecievedResponseData?.Invoke(null, new() { RecievedRequestData = e, Bytes = responseBytes }));
         }
     }
     public class RecievedResponseDataEventArgs : EventArgs
     {
-        public RecievedRequestDataEventArgs RecievedRequestData;
-        public byte[] Bytes;
-        public RecievedResponseDataEventArgs(RecievedRequestDataEventArgs RecievedRequestData, byte[] Bytes)
-        {
-            this.RecievedRequestData = RecievedRequestData;
-            this.Bytes = Bytes;
-        }
+        public required RecievedRequestDataEventArgs RecievedRequestData;
+        public required byte[] Bytes;
     }
 }

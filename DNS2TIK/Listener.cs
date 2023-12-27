@@ -18,19 +18,14 @@ namespace DNS2TIK
                 {
                     IPEndPoint? ipEndPoint = null;
                     byte[] bytes = Client.Receive(ref ipEndPoint);
-                    _ = Task.Run(() => RecievedRequestData?.Invoke(null, new(ipEndPoint, bytes)));
+                    _ = Task.Run(() => RecievedRequestData?.Invoke(null, new() { IPEndPoint = ipEndPoint, Bytes = bytes }));
                 }
             });
         }
     }
     public class RecievedRequestDataEventArgs : EventArgs
     {
-        public IPEndPoint IPEndPoint;
-        public byte[] Bytes;
-        public RecievedRequestDataEventArgs(IPEndPoint IPEndPoint, byte[] Bytes)
-        {
-            this.IPEndPoint = IPEndPoint;
-            this.Bytes = Bytes;
-        }
+        public required IPEndPoint IPEndPoint;
+        public required byte[] Bytes;
     }
 }
