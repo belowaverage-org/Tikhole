@@ -8,14 +8,30 @@ namespace DNS2TIK
         public static Forwarder Forwarder;
         public static Responder Responder;
         public static Parser Parser;
+        public static Matcher Matcher;
         public static void Main(string[] args)
         {
             Listener = new Listener();
             Forwarder = new Forwarder();
             Responder = new Responder();
             Parser = new Parser();
-            Parser.ParsedResponseData += Parser_ParsedResponseData;
+            Matcher = new Matcher();
+            //Parser.ParsedResponseData += Parser_ParsedResponseData;
+            Matcher.ResponseMatched += Matcher_ResponseMatched;
             Thread.Sleep(-1);
+        }
+        private static void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
+        {
+            Console.WriteLine("Match found: " + e.AddressListName);
+            foreach (string name in e.MatchedNames)
+            {
+                Console.WriteLine("    Name: " + name);
+            }
+            foreach (IPAddress address in e.Addresses)
+            {
+                Console.WriteLine("    IP: " + address.ToString());
+            }
+            Console.WriteLine();
         }
         private static void Parser_ParsedResponseData(object? sender, ParsedResponseDataEventArgs e)
         {
