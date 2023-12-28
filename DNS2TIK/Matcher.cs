@@ -12,7 +12,8 @@ namespace DNS2TIK
             { "DNS_Reddit", new("^.*\\.?reddit\\.com$") },
             { "DNS_Youtube", new("^.*\\.?youtube\\.com$") },
             { "DNS_Microsoft", new("^.*\\.?microsoft\\.com$") },
-            { "DNS_Facebook", new("^.*\\.?facebook\\.com$") }
+            { "DNS_Facebook", new("^.*\\.?facebook\\.com$") },
+            { "DNS_Everything", new(".*") }
         };
         public event EventHandler<ResponseMatchedEventArgs>? ResponseMatched;
         public Matcher()

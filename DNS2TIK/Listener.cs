@@ -10,6 +10,7 @@ namespace DNS2TIK
         public IPEndPoint IPEndPoint = new(IPAddress.Any, 53);
         public Listener()
         {
+            Logger.Info("Starting DNS server on " + IPEndPoint.ToString() + "...");
             Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             Client.Client.Bind(IPEndPoint);
             _ = Task.Run(() =>

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace DNS2TIK
@@ -74,6 +75,39 @@ namespace DNS2TIK
                 }
             }
             return addresses;
+        }
+        public static string[] SendSentence(this TcpClient Client, string[] Words)
+        {
+            int index = 0;
+            int sentenceLength = 0;
+            foreach (string word in Words) sentenceLength += word.Length + 1;
+            byte[] sentenceBytes = new byte[sentenceLength + 1];
+            foreach (string word in Words)
+            {
+                sentenceBytes[index++] = (byte)word.Length;
+                Encoding.ASCII.GetBytes(word).CopyTo(sentenceBytes, index);
+                index += word.Length;
+            }
+            Client.Client.Send(sentenceBytes);
+            return Client.ReadSentence();
+        }
+        private static string[] ReadSentence(this TcpClient Client)
+        {
+            Client.Client.Poll(TimeSpan.FromMilliseconds(1000), SelectMode.SelectRead);
+            List<string> sentence = new();
+            if (Client.Available == 0) return sentence.ToArray();
+            byte[] bytes = new byte[Client.Available];
+            Client.Client.Receive(bytes);
+            int index = 0;
+            while (true)
+            {
+                int length = bytes[index++];
+                if (index == bytes.Length) break;
+                if (length == 0) continue;
+                sentence.Add(Encoding.ASCII.GetString(bytes, index, length));
+                index += length;
+            }
+            return sentence.ToArray();
         }
     }
 }
