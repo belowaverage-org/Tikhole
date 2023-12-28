@@ -1,25 +1,26 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace DNS2TIK
+namespace Tikhole
 {
     public class Forwarder
     {
-        public IPEndPoint DNSServer = new(IPAddress.Parse("1.1.1.1"), 53);
+        public IPEndPoint DNSServer = new(IPAddress.Parse("9.9.9.9"), 53);
         public event EventHandler<RecievedResponseDataEventArgs>? RecievedResponseData;
         public Forwarder()
         {
-            Program.Listener.RecievedRequestData += Listener_RecievedRequestData;
+            Tikhole.Listener.RecievedRequestData += Listener_RecievedRequestData;
         }
         private void Listener_RecievedRequestData(object? sender, RecievedRequestDataEventArgs e)
         {
+            if (Logger.VerboseMode) Logger.Verbose("Recieved request from " + e.IPEndPoint.ToString() + ", forwarding to " + Tikhole.Forwarder.DNSServer.ToString() + "...");
             IPEndPoint? responseEndPoint = null;
             UdpClient udpClient = new();
             udpClient.Connect(DNSServer);
             udpClient.Send(e.Data);
             byte[] responseBytes = udpClient.Receive(ref responseEndPoint);
             udpClient.Close();
-            _ = Task.Run(() => RecievedResponseData?.Invoke(null, new() { RecievedRequestData = e, Data = responseBytes }));
+            RecievedResponseData?.Invoke(null, new() { RecievedRequestData = e, Data = responseBytes });
         }
     }
     public class RecievedResponseDataEventArgs : EventArgs

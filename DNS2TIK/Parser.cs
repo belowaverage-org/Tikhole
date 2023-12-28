@@ -1,42 +1,45 @@
-﻿namespace DNS2TIK
+﻿namespace Tikhole
 {
     public class Parser
     {
         public event EventHandler<ParsedResponseDataEventArgs>? ParsedResponseData;
         public Parser()
         {
-            Program.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
+            Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {
-            int index = 12;
-            DNSPacket packet = new()
-            {
-                Questions = new DNSQuestionRecord[e.Data.ToUShort(4)],
-                Answers = new DNSResourceRecord[e.Data.ToUShort(6)]
-            };
-            for (int i = 0; i < packet.Questions.Length; i++)
-            {
-                packet.Questions[i].Name = e.Data.ToLabelsString(ref index);
-                packet.Questions[i].Type = (DNSType)e.Data.ToUShort(index + 1);
-                packet.Questions[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
-                index += 5;
-            }
-            for (int i = 0; i < packet.Answers.Length; i++)
-            {
-                packet.Answers[i].Name = e.Data.ToLabelsString(ref index);
-                packet.Answers[i].Type = (DNSType)e.Data.ToUShort(index + 1);
-                packet.Answers[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
-                packet.Answers[i].TimeToLive = (int)e.Data.ToUInt(index + 5);
-                packet.Answers[i].Data = new byte[e.Data.ToUShort(index + 9)];
-                index += 11;
-                packet.Answers[i].DataIndex = index;
-                for (int di = 0; di < packet.Answers[i].Data.Length; di++)
+            _ = Task.Run(() => {
+                if (Logger.VerboseMode) Logger.Verbose("Parsing response...");
+                int index = 12;
+                DNSPacket packet = new()
                 {
-                    packet.Answers[i].Data[di] = e.Data[index++];
+                    Questions = new DNSQuestionRecord[e.Data.ToUShort(4)],
+                    Answers = new DNSResourceRecord[e.Data.ToUShort(6)]
+                };
+                for (int i = 0; i < packet.Questions.Length; i++)
+                {
+                    packet.Questions[i].Name = e.Data.ToLabelsString(ref index);
+                    packet.Questions[i].Type = (DNSType)e.Data.ToUShort(index + 1);
+                    packet.Questions[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
+                    index += 5;
                 }
-            }
-            _ = Task.Run(() => ParsedResponseData?.Invoke(null, new() {RecievedResponseData = e, DNSPacket = packet }));
+                for (int i = 0; i < packet.Answers.Length; i++)
+                {
+                    packet.Answers[i].Name = e.Data.ToLabelsString(ref index);
+                    packet.Answers[i].Type = (DNSType)e.Data.ToUShort(index + 1);
+                    packet.Answers[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
+                    packet.Answers[i].TimeToLive = (int)e.Data.ToUInt(index + 5);
+                    packet.Answers[i].Data = new byte[e.Data.ToUShort(index + 9)];
+                    index += 11;
+                    packet.Answers[i].DataIndex = index;
+                    for (int di = 0; di < packet.Answers[i].Data.Length; di++)
+                    {
+                        packet.Answers[i].Data[di] = e.Data[index++];
+                    }
+                }
+                ParsedResponseData?.Invoke(null, new() { RecievedResponseData = e, DNSPacket = packet });
+            });
         }
     }
     public class ParsedResponseDataEventArgs : EventArgs

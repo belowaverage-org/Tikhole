@@ -1,31 +1,36 @@
-﻿namespace DNS2TIK
+﻿namespace Tikhole
 {
     public static class Logger
     {
+        public static bool VerboseMode = true;
+        private static SemaphoreSlim Semaphore = new(1, 1);
         public static void Success(string Message)
         {
-            Raw(Message);
+            Raw("S: " + Message, ConsoleColor.Green);
         }
         public static void Error(string Message) 
         {
-            Raw(Message);
+            Raw("E: " + Message, ConsoleColor.Red);
         }
         public static void Warning(string Message) 
         {
-            Raw(Message);
+            Raw("W: " + Message, ConsoleColor.Yellow);
         }
         public static void Info(string Message)
         {
-            Raw(Message);
+            Raw("I: " + Message, ConsoleColor.White);
         }
         public static void Verbose(string Message) 
         {
-            Raw(Message);
+            Raw("V: " + Message);
         }
-        public static void Raw(string Message, bool WithDateTime = true)
+        public static void Raw(string Message, ConsoleColor Color = ConsoleColor.DarkGray, bool IncludePrefix = true)
         {
-            if (WithDateTime) Console.Write(DateTime.Now + ": ");
+            Semaphore.Wait();
+            Console.ForegroundColor = Color;
+            if (IncludePrefix) Console.Write(DateTime.Now.ToString("HH:mm:ss.ff") + ": " + Thread.CurrentThread.ManagedThreadId + ": ");
             Console.WriteLine(Message);
+            Semaphore.Release();
         }
     }
 }

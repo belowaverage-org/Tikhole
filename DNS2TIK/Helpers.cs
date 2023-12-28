@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 
-namespace DNS2TIK
+namespace Tikhole
 {
     public static class Helpers
     {

@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace DNS2TIK
+namespace Tikhole
 {
     public class Listener
     {
@@ -23,7 +23,10 @@ namespace DNS2TIK
                         byte[] bytes = Client.Receive(ref ipEndPoint);
                         _ = Task.Run(() => RecievedRequestData?.Invoke(null, new() { IPEndPoint = ipEndPoint, Data = bytes }));
                     }
-                    catch { }
+                    catch
+                    {
+                        Logger.Warning("Error receiving request.");
+                    }
                 }
             });
         }

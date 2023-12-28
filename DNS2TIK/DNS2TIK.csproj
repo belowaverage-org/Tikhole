@@ -7,6 +7,35 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <Trimming>full</Trimming>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0.0</FileVersion>
+    <Copyright>below average (C) 2023</Copyright>
+    <Company>below average</Company>
+    <Authors>below average</Authors>
+    <Product>Tikhole</Product>
+    <Title>Tikhole</Title>
+    <PackageId>Tikhole</PackageId>
+    <Version>0.0.0.0</Version>
+    <AssemblyName>Tikhole</AssemblyName>
+    <RootNamespace>Tikhole</RootNamespace>
+    <Description>Tikhole: DNS based firewall filtering.</Description>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <EnableNETAnalyzers>False</EnableNETAnalyzers>
+    <AnalysisLevel>none</AnalysisLevel>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <NoWin32Manifest>true</NoWin32Manifest>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
 </Project>

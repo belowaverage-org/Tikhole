@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
 
-namespace DNS2TIK
+namespace Tikhole
 {
     public class Matcher
     {
@@ -12,16 +12,26 @@ namespace DNS2TIK
             { "DNS_Reddit", new("^.*\\.?reddit\\.com$") },
             { "DNS_Youtube", new("^.*\\.?youtube\\.com$") },
             { "DNS_Microsoft", new("^.*\\.?microsoft\\.com$") },
-            { "DNS_Facebook", new("^.*\\.?facebook\\.com$") },
-            { "DNS_Everything", new(".*") }
+            { "DNS_Facebook", new("^.*\\.?facebook\\.com$") }
         };
         public event EventHandler<ResponseMatchedEventArgs>? ResponseMatched;
         public Matcher()
         {
-            Program.Parser.ParsedResponseData += Parser_ParsedResponseData;
+            Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
         }
         private void Parser_ParsedResponseData(object? sender, ParsedResponseDataEventArgs e)
         {
+            if (Logger.VerboseMode)
+            {
+                if (e.DNSPacket.Answers.Length == 0)
+                {
+                    Logger.Verbose("Response has no answers.");
+                    return;
+                }
+                List<string> names = new();
+                foreach (DNSResourceRecord answer in e.DNSPacket.Answers) names.Add(answer.Name);
+                Logger.Verbose("Response parsed as " + string.Join(", ", names) + ", checking for matches...");
+            }
             foreach (KeyValuePair<string, Regex> matcher in MatchTable)
             {
                 List<string> matchedNames = new();
@@ -59,14 +69,14 @@ namespace DNS2TIK
                     }
                 }
                 if (addresses.Count == 0) continue;
-                _ = Task.Run(() => ResponseMatched?.Invoke(null, new()
+                ResponseMatched?.Invoke(null, new()
                 {
                     ParsedResponseData = e,
                     AddressListName = matcher.Key,
                     MatchedNames = matchedNames.ToArray(),
                     Aliases = aliases.ToArray(),
                     Addresses = addresses.ToArray()
-                }));
+                });
             }
         }
     }

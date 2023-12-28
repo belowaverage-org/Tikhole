@@ -1,16 +1,19 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace DNS2TIK
+namespace Tikhole
 {
     public class Committer
     {
+        public static string ListTTL = "24h";
+        public static string UserName = "";
+        public static string Password = "";
         public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse(""), 8728);
         public static TcpClient TcpClient = new();
         private static SemaphoreSlim Semaphore = new(1, 1);
         public Committer()
         {
-            Program.Matcher.ResponseMatched += Matcher_ResponseMatched;
+            Tikhole.Matcher.ResponseMatched += Matcher_ResponseMatched;
         }
 
         private void Login()
@@ -20,8 +23,8 @@ namespace DNS2TIK
             TcpClient.Connect(RouterOSIPEndPoint);
             TcpClient.SendSentence([
                 "/login",
-                "=name=",
-                "=password="
+                "=name=" + UserName,
+                "=password=" + Password
             ]);
             Logger.Success("Connected to " + RouterOSIPEndPoint.ToString() + ".");
         }
@@ -32,31 +35,42 @@ namespace DNS2TIK
             {
                 Semaphore.Wait();
                 if (!TcpClient.Connected) Login();
+                if (Logger.VerboseMode)
+                {
+                    List<string> sAddresses = new();
+                    foreach (IPAddress address in e.Addresses) sAddresses.Add(address.ToString());
+                    Logger.Verbose("Match found, committing " + string.Join(", ", sAddresses) + " under " + e.AddressListName + " to " + Committer.RouterOSIPEndPoint.ToString() + "...");
+                }
                 foreach (IPAddress address in e.Addresses)
                 {
-                    Logger.Verbose("Adding " + address.ToString() + " to " + e.AddressListName + "...");
-                    if (address.AddressFamily != AddressFamily.InterNetwork) continue;
+                    string v6 = "";
+                    string cidr = "";
+                    if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        v6 = "v6";
+                        cidr = "/128";
+                    }
                     string[] response = TcpClient.SendSentence([
-                        "/ip/firewall/address-list/print",
+                        "/ip" + v6 + "/firewall/address-list/print",
                         "=.proplist=.id",
                         "?list=" + e.AddressListName,
-                        "?address=" + address.ToString()
+                        "?address=" + address.ToString() + cidr
                     ]);
                     if (response.Length == 3)
                     {
                         TcpClient.SendSentence([
-                            "/ip/firewall/address-list/set",
+                            "/ip" + v6 + "/firewall/address-list/set",
                             response[1],
-                            "=timeout=24h"
+                            "=timeout=" + ListTTL
                         ]);
                         continue;
                     }
                     TcpClient.SendSentence([
-                        "/ip/firewall/address-list/add",
+                        "/ip" + v6 + "/firewall/address-list/add",
                         "=list=" + e.AddressListName,
                         "=comment=" + e.MatchedNames[0],
-                        "=address=" + address.ToString(),
-                        "=timeout=24h"
+                        "=address=" + address.ToString() + cidr,
+                        "=timeout=" + ListTTL
                     ]);
                 }
             }
