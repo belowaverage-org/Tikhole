@@ -19,8 +19,9 @@ namespace Tikhole
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
                 config.ReadSetting("/Tikhole/Forwarder/DnsEndpoint", ref Forwarder.DNSServer);
                 config.ReadSetting("/Tikhole/Logger/VerboseMode", ref Logger.VerboseMode);
+                XmlNode? rulesNode = config.SelectSingleNode("/Tikhole/Matcher/Rules");
                 XmlNodeList? xRules = config.SelectNodes("/Tikhole/Matcher/Rules/*");
-                if (xRules != null)
+                if (xRules != null && rulesNode != null)
                 {
                     MatchTable table = new();
                     foreach (XmlNode xRule in xRules) table.Add(xRule.Name, new Regex(xRule.InnerText));

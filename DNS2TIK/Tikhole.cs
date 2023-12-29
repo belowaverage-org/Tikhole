@@ -17,6 +17,7 @@ namespace Tikhole
             Logger.Info(Assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product + " v" + Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
             Configurator = new Configurator();
             Configurator.LoadConfig();
+            Configurator.SaveConfig();
             Listener = new Listener();
             Forwarder = new Forwarder();
             Responder = new Responder();

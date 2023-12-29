@@ -9,6 +9,7 @@ namespace Tikhole
         public event EventHandler<RecievedResponseDataEventArgs>? RecievedResponseData;
         public Forwarder()
         {
+            Logger.Info("Forwarder set for " + DNSServer.ToString() + ".");
             if (Tikhole.Listener != null) Tikhole.Listener.RecievedRequestData += Listener_RecievedRequestData;
         }
         private void Listener_RecievedRequestData(object? sender, RecievedRequestDataEventArgs e)
