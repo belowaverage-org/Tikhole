@@ -7,17 +7,17 @@ namespace Tikhole
     {
         public static MatchTable MatchTable = new()
         {
-            { "DNS_Apple", new("^.*\\.?apple\\.com$") },
-            { "DNS_Google", new("^.*\\.?google\\.com$") },
-            { "DNS_Reddit", new("^.*\\.?reddit\\.com$") },
-            { "DNS_Youtube", new("^.*\\.?youtube\\.com$") },
-            { "DNS_Microsoft", new("^.*\\.?microsoft\\.com$") },
-            { "DNS_Facebook", new("^.*\\.?facebook\\.com$") }
+            { "Apple", new("^.*\\.?apple\\.com$") },
+            { "Google", new("^.*\\.?google\\.com$") },
+            { "Reddit", new("^.*\\.?reddit\\.com$") },
+            { "Youtube", new("^.*\\.?youtube\\.com$") },
+            { "Microsoft", new("^.*\\.?microsoft\\.com$") },
+            { "Facebook", new("^.*\\.?facebook\\.com$") }
         };
         public event EventHandler<ResponseMatchedEventArgs>? ResponseMatched;
         public Matcher()
         {
-            Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
+            if (Tikhole.Parser != null) Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
         }
         private void Parser_ParsedResponseData(object? sender, ParsedResponseDataEventArgs e)
         {

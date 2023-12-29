@@ -6,27 +6,34 @@ namespace Tikhole
     public class Committer
     {
         public static string ListTTL = "24h";
-        public static string UserName = "";
+        public static string UserName = "Tikhole";
         public static string Password = "";
-        public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse(""), 8728);
+        public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse("192.168.200.1"), 8728);
         public static TcpClient TcpClient = new();
         private static SemaphoreSlim Semaphore = new(1, 1);
         public Committer()
         {
-            Tikhole.Matcher.ResponseMatched += Matcher_ResponseMatched;
+            if (Tikhole.Matcher != null) Tikhole.Matcher.ResponseMatched += Matcher_ResponseMatched;
         }
 
         private void Login()
         {
-            Logger.Info("Connecting to " + RouterOSIPEndPoint.ToString() + "...");
-            TcpClient = new();
-            TcpClient.Connect(RouterOSIPEndPoint);
-            TcpClient.SendSentence([
-                "/login",
-                "=name=" + UserName,
-                "=password=" + Password
-            ]);
-            Logger.Success("Connected to " + RouterOSIPEndPoint.ToString() + ".");
+            try
+            {
+                Logger.Info("Connecting to " + RouterOSIPEndPoint.ToString() + "...");
+                TcpClient = new();
+                TcpClient.Connect(RouterOSIPEndPoint);
+                TcpClient.SendSentence([
+                    "/login",
+                    "=name=" + UserName,
+                    "=password=" + Password
+                ]);
+                Logger.Success("Connected to " + RouterOSIPEndPoint.ToString() + ".");
+            }
+            catch
+            {
+                Logger.Warning("Failed to connect to " + RouterOSIPEndPoint.ToString() + ".");
+            }
         }
 
         private void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
@@ -45,6 +52,7 @@ namespace Tikhole
                 {
                     string v6 = "";
                     string cidr = "";
+                    string comment = "Tikhole: " + string.Join(", ", e.MatchedNames);
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
                         v6 = "v6";
@@ -61,6 +69,7 @@ namespace Tikhole
                         TcpClient.SendSentence([
                             "/ip" + v6 + "/firewall/address-list/set",
                             response[1],
+                            "=comment=" + comment,
                             "=timeout=" + ListTTL
                         ]);
                         continue;
@@ -68,7 +77,7 @@ namespace Tikhole
                     TcpClient.SendSentence([
                         "/ip" + v6 + "/firewall/address-list/add",
                         "=list=" + e.AddressListName,
-                        "=comment=" + e.MatchedNames[0],
+                        "=comment=" + comment,
                         "=address=" + address.ToString() + cidr,
                         "=timeout=" + ListTTL
                     ]);

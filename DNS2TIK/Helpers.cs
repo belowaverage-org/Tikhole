@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Xml;
 
 namespace Tikhole
 {
@@ -108,6 +109,32 @@ namespace Tikhole
                 index += length;
             }
             return sentence.ToArray();
+        }
+        public static void AddSetting(this XmlNode Parent, string Name, string InnerText)
+        {
+            if (Parent.OwnerDocument == null) return;
+            XmlNode child = Parent.OwnerDocument.CreateElement(Name);
+            child.InnerText = InnerText;
+            Parent.AppendChild(child);
+        }
+        public static void ReadSetting(this XmlNode Parent, string XPath, ref string Value)
+        {
+            XmlNode? node = Parent.SelectSingleNode(XPath);
+            if (node != null) Value = node.InnerText;
+        }
+        public static void ReadSetting(this XmlNode Parent, string XPath, ref IPEndPoint Value)
+        {
+            XmlNode? node = Parent.SelectSingleNode(XPath);
+            if (node != null)
+            {
+                IPEndPoint.TryParse(node.InnerText, out IPEndPoint? iepValue);
+                if (iepValue != null) Value = iepValue;
+            }
+        }
+        public static void ReadSetting(this XmlNode Parent, string XPath, ref bool Value)
+        {
+            XmlNode? node = Parent.SelectSingleNode(XPath);
+            if (node != null) bool.TryParse(node.InnerText, out Value);
         }
     }
 }

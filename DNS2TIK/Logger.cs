@@ -2,7 +2,7 @@
 {
     public static class Logger
     {
-        public static bool VerboseMode = true;
+        public static bool VerboseMode = false;
         private static SemaphoreSlim Semaphore = new(1, 1);
         public static void Success(string Message)
         {

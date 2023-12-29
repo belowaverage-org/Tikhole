@@ -10,25 +10,33 @@ namespace Tikhole
         public IPEndPoint IPEndPoint = new(IPAddress.Any, 53);
         public Listener()
         {
-            Logger.Info("Starting DNS server on " + IPEndPoint.ToString() + "...");
-            Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            Client.Client.Bind(IPEndPoint);
-            _ = Task.Run(() =>
+            try
             {
-                while (Client != null)
+                Logger.Info("Starting listnener on " + IPEndPoint.ToString() + "...");
+                Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                Client.Client.Bind(IPEndPoint);
+                _ = Task.Run(() =>
                 {
-                    IPEndPoint? ipEndPoint = null;
-                    try
+                    while (Client != null)
                     {
-                        byte[] bytes = Client.Receive(ref ipEndPoint);
-                        _ = Task.Run(() => RecievedRequestData?.Invoke(null, new() { IPEndPoint = ipEndPoint, Data = bytes }));
+                        IPEndPoint? ipEndPoint = null;
+                        try
+                        {
+                            byte[] bytes = Client.Receive(ref ipEndPoint);
+                            _ = Task.Run(() => RecievedRequestData?.Invoke(null, new() { IPEndPoint = ipEndPoint, Data = bytes }));
+                        }
+                        catch
+                        {
+                            Logger.Warning("Error receiving request.");
+                        }
                     }
-                    catch
-                    {
-                        Logger.Warning("Error receiving request.");
-                    }
-                }
-            });
+                });
+                Logger.Success("Listener started on " + IPEndPoint.ToString() + ".");
+            }
+            catch
+            {
+                Logger.Error("Could not start listener on " + IPEndPoint.ToString() + ".");
+            }
         }
     }
     public class RecievedRequestDataEventArgs : EventArgs

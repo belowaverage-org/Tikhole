@@ -5,7 +5,7 @@
         public event EventHandler<ParsedResponseDataEventArgs>? ParsedResponseData;
         public Parser()
         {
-            Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
+            if (Tikhole.Forwarder != null) Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {
