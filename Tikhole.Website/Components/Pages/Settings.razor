@@ -5,14 +5,22 @@
 <PageTitle>⚙️ Settings</PageTitle>
 
 <h1>⚙️ Settings</h1>
+<p class="text-secondary">
+    <small>A list of Tikhole settings. Changes made here are in real-time.</small>
+</p>
+<hr />
 @if (Error != "")
 {
-    <div class="alert alert-warning" role="alert">
-        @Error
+    <div class="toast show position-fixed bottom-0 end-0 m-3">
+        <div class="toast-header">
+            <strong class="me-auto">⚠️ Error</strong>
+        </div>
+        <div class="toast-body">
+            @Error
+        </div>
     </div>
 }
 <div style="max-width:500px;">
-    <hr />
     <h5>🌎 RouterOS Settings</h5>
     <hr />
     <div class="mb-3">

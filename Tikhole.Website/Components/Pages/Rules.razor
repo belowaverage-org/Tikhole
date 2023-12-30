@@ -4,7 +4,36 @@
 <PageTitle>📃 Rules</PageTitle>
 
 <h1>📃 Rules</h1>
+<p class="text-secondary">
+    <small>A list of IP List Names and their corresponding regular expression. Changes made here are in real-time.</small>
+</p>
+<hr />
+
+<div class="input-group mb-3">
+    <span class="input-group-text">Name</span>
+    <InputText @bind-Value="Test" class="form-control" />
+    <span class="input-group-text">Regex</span>
+    <InputText @bind-Value="Test" class="form-control" />
+    <button class="btn btn-outline-secondary" type="button">⬆️</button>
+    <button class="btn btn-outline-secondary" type="button">⬇️</button>
+</div>
+<div class="input-group mb-3">
+    <span class="input-group-text">Name</span>
+    <InputText @bind-Value="Test" class="form-control" />
+    <span class="input-group-text">Regex</span>
+    <InputText @bind-Value="Test" class="form-control" />
+    <button class="btn btn-outline-secondary" type="button">⬆️</button>
+    <button class="btn btn-outline-secondary" type="button">⬇️</button>
+</div>
+<div class="input-group mb-3">
+    <span class="input-group-text">Name</span>
+    <InputText @bind-Value="Test" class="form-control" />
+    <span class="input-group-text">Regex</span>
+    <InputText @bind-Value="Test" class="form-control" />
+    <button class="btn btn-outline-secondary" type="button">⬆️</button>
+    <button class="btn btn-outline-secondary" type="button">⬇️</button>
+</div>
 
 @code {
-
+    private string Test { get; set; } = "";
 }
