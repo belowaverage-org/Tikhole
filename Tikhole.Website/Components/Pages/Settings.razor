@@ -1,0 +1,151 @@
+﻿@page "/Settings"
+@using System.Net
+@rendermode InteractiveServer
+
+<PageTitle>⚙️ Settings</PageTitle>
+
+<h1>⚙️ Settings</h1>
+@if (Error != "")
+{
+    <div class="alert alert-warning" role="alert">
+        @Error
+    </div>
+}
+<div style="max-width:500px;">
+    <hr />
+    <h5>🌎 RouterOS Settings</h5>
+    <hr />
+    <div class="mb-3">
+        <label class="form-label">API Endpoint</label>
+        <InputText @bind-Value="CommitterEndpoint" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">API Username</label>
+        <InputText @bind-Value="CommitterUserName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">API Password</label>
+        <InputText type="password" @bind-Value="CommitterPassword" class="form-control" />
+    </div>
+    <hr />
+    <div class="mb-3">
+        <label class="form-label">IP List Timeout</label>
+        <InputText @bind-Value="CommiterIPListTimeout" class="form-control" />
+        <div class="form-text">This is the timeout value used when a matched DNS record is added to the RouterOS firewall IP list.</div>
+    </div>
+    <hr />
+    <h5>⏩ Forwarder Settings</h5>
+    <hr />
+    <div class="mb-3">
+        <label class="form-label">DNS Server Endpoint</label>
+        <InputText @bind-Value="ForwarderDNSEndpoint" class="form-control" />
+        <div class="form-text">This is the DNS server that requests recieved by Tikhole are sent to.</div>
+    </div>
+    <hr />
+    <h5>📜 Logger Settings</h5>
+    <hr />
+    <div class="mb-3">
+        <label class="form-label">Verbose Mode</label>
+        <InputText @bind-Value="LoggerVerboseMode" class="form-control" />
+    </div>
+</div>
+
+@code {
+    private string Error { get; set; } = "";
+    private string CommitterEndpoint
+    {
+        get
+        {
+            return Engine.Committer.RouterOSIPEndPoint.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Committer.RouterOSIPEndPoint = IPEndPoint.Parse(value);
+                Engine.Tikhole.Configurator?.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+    private string CommitterUserName
+    {
+        get
+        {
+            return Engine.Committer.UserName;
+        }
+        set
+        {
+            Engine.Committer.UserName = value;
+            Engine.Tikhole.Configurator?.SaveConfig();
+        }
+    }
+    private string CommitterPassword
+    {
+        get
+        {
+            return Engine.Committer.Password;
+        }
+        set
+        {
+            Engine.Committer.Password = value;
+            Engine.Tikhole.Configurator?.SaveConfig();
+        }
+    }
+    private string CommiterIPListTimeout
+    {
+        get
+        {
+            return Engine.Committer.ListTTL;
+        }
+        set
+        {
+            Engine.Committer.ListTTL = value;
+            Engine.Tikhole.Configurator?.SaveConfig();
+        }
+    }
+    private string ForwarderDNSEndpoint
+    {
+        get
+        {
+            return Engine.Forwarder.DNSServer.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Forwarder.DNSServer = IPEndPoint.Parse(value);
+                Engine.Tikhole.Configurator?.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+    private string LoggerVerboseMode
+    {
+        get
+        {
+            return Engine.Logger.VerboseMode.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Logger.VerboseMode = bool.Parse(value);
+                Engine.Tikhole.Configurator?.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+}

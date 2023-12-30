@@ -8,6 +8,7 @@ namespace Tikhole.Engine
         public static string ListTTL = "24h";
         public static string UserName = "Tikhole";
         public static string Password = "";
+        public static uint Committed = 0;
         public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse("192.168.200.1"), 8728);
         public static TcpClient TcpClient = new();
         private static SemaphoreSlim Semaphore = new(1, 1);
@@ -15,7 +16,6 @@ namespace Tikhole.Engine
         {
             if (Tikhole.Matcher != null) Tikhole.Matcher.ResponseMatched += Matcher_ResponseMatched;
         }
-
         private void Login()
         {
             try
@@ -35,7 +35,6 @@ namespace Tikhole.Engine
                 Logger.Warning("Failed to connect to " + RouterOSIPEndPoint.ToString() + ".");
             }
         }
-
         private void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
         {
             try
@@ -64,6 +63,7 @@ namespace Tikhole.Engine
                         "?list=" + e.AddressListName,
                         "?address=" + address.ToString() + cidr
                     ]);
+                    Committed++;
                     if (response.Length == 3)
                     {
                         TcpClient.SendSentence([

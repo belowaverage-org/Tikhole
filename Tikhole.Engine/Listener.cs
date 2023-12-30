@@ -5,9 +5,10 @@ namespace Tikhole.Engine
 {
     public class Listener
     {
-        public UdpClient Client = new();
+        public static UdpClient Client = new();
+        public static IPEndPoint IPEndPoint = new(IPAddress.Any, 53);
+        public static uint Requests = 0;
         public event EventHandler<RecievedRequestDataEventArgs>? RecievedRequestData;
-        public IPEndPoint IPEndPoint = new(IPAddress.Any, 53);
         public Listener()
         {
             try
@@ -24,6 +25,7 @@ namespace Tikhole.Engine
                         {
                             byte[] bytes = Client.Receive(ref ipEndPoint);
                             _ = Task.Run(() => RecievedRequestData?.Invoke(null, new() { IPEndPoint = ipEndPoint, Data = bytes }));
+                            Requests++;
                         }
                         catch
                         {

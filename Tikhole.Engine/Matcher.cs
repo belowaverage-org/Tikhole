@@ -5,6 +5,7 @@ namespace Tikhole.Engine
 {
     public class Matcher
     {
+        public static uint Matches = 0;
         public static MatchTable MatchTable = new()
         {
             { "Apple", new("^.*\\.?apple\\.com$") },
@@ -77,6 +78,7 @@ namespace Tikhole.Engine
                     Aliases = aliases.ToArray(),
                     Addresses = addresses.ToArray()
                 });
+                Matches++;
             }
         }
     }

@@ -3,7 +3,9 @@
     public static class Logger
     {
         public static bool VerboseMode = false;
-        private static SemaphoreSlim Semaphore = new(1, 1);
+        public static Queue<string> Logs = new();
+        public static event EventHandler<EventArgs>? NewLogEntry;
+        public static SemaphoreSlim Semaphore = new(1, 1);
         public static void Success(string Message)
         {
             Raw("S: " + Message, ConsoleColor.Green);
@@ -26,10 +28,15 @@
         }
         public static void Raw(string Message, ConsoleColor Color = ConsoleColor.DarkGray, bool IncludePrefix = true)
         {
+            string log = "";
+            if (IncludePrefix) log += DateTime.Now.ToString("HH:mm:ss.ff") + ": " + Thread.CurrentThread.ManagedThreadId + ": ";
+            log += Message;
             Semaphore.Wait();
             Console.ForegroundColor = Color;
-            if (IncludePrefix) Console.Write(DateTime.Now.ToString("HH:mm:ss.ff") + ": " + Thread.CurrentThread.ManagedThreadId + ": ");
-            Console.WriteLine(Message);
+            Console.WriteLine(log);
+            Logs.Enqueue(log);
+            if (Logs.Count > 1000) Logs.Dequeue();
+            _ = Task.Run(() => NewLogEntry?.Invoke(null, EventArgs.Empty));
             Semaphore.Release();
         }
     }

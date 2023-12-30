@@ -10,7 +10,7 @@
         {
             if (Tikhole.Listener == null) return;
             if (Logger.VerboseMode) Logger.Verbose("Recieved response from " + Forwarder.DNSServer.ToString() + ", forwarding to " + e.RecievedRequestData.IPEndPoint.ToString() + "...");
-            Tikhole.Listener.Client.Send(e.Data, e.RecievedRequestData.IPEndPoint);
+            Listener.Client.Send(e.Data, e.RecievedRequestData.IPEndPoint);
         }
     }
 }

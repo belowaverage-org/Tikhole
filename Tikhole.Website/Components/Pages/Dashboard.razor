@@ -1,0 +1,46 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>🚦 Dashboard</PageTitle>
+
+<h1>🚦 Dashboard</h1>
+<hr />
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">🗣️ <b>Requests</b></div>
+            <div class="card-body text-center">
+                <h1>@Engine.Listener.Requests</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">🔎 <b>Matches</b></div>
+            <div class="card-body text-center">
+                <h1>@Engine.Matcher.Matches</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">📨 <b>Commits</b></div>
+            <div class="card-body text-center">
+                <h1>@Engine.Committer.Committed</h1>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (Engine.Tikhole.Listener != null) Engine.Tikhole.Listener.RecievedRequestData += Listener_RecievedRequestData;
+    }
+    private void Listener_RecievedRequestData(object sender, EventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+}

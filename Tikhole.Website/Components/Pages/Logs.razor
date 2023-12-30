@@ -1,0 +1,29 @@
+﻿@page "/Logs"
+@rendermode InteractiveServer
+
+<PageTitle>📜 Logs</PageTitle>
+
+<h1>📜 Logs</h1>
+<hr />
+<pre>
+    @{
+        Engine.Logger.Semaphore.Wait();
+        foreach (string log in Engine.Logger.Logs)
+        {
+            @(log + "\r\n")
+        }
+        Engine.Logger.Semaphore.Release();
+    }
+</pre>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Engine.Logger.NewLogEntry += Logger_NewLogEntry;
+    }
+    private void Logger_NewLogEntry(object? sender, EventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+}
