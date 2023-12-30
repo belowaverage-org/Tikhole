@@ -1,4 +1,5 @@
 ﻿@page "/Rules"
+@using System.Text.RegularExpressions
 @rendermode InteractiveServer
 
 <PageTitle>📃 Rules</PageTitle>
@@ -9,31 +10,29 @@
 </p>
 <hr />
 
-<div class="input-group mb-3">
-    <span class="input-group-text">Name</span>
-    <InputText @bind-Value="Test" class="form-control" />
-    <span class="input-group-text">Regex</span>
-    <InputText @bind-Value="Test" class="form-control" />
-    <button class="btn btn-outline-secondary" type="button">⬆️</button>
-    <button class="btn btn-outline-secondary" type="button">⬇️</button>
-</div>
-<div class="input-group mb-3">
-    <span class="input-group-text">Name</span>
-    <InputText @bind-Value="Test" class="form-control" />
-    <span class="input-group-text">Regex</span>
-    <InputText @bind-Value="Test" class="form-control" />
-    <button class="btn btn-outline-secondary" type="button">⬆️</button>
-    <button class="btn btn-outline-secondary" type="button">⬇️</button>
-</div>
-<div class="input-group mb-3">
-    <span class="input-group-text">Name</span>
-    <InputText @bind-Value="Test" class="form-control" />
-    <span class="input-group-text">Regex</span>
-    <InputText @bind-Value="Test" class="form-control" />
-    <button class="btn btn-outline-secondary" type="button">⬆️</button>
-    <button class="btn btn-outline-secondary" type="button">⬇️</button>
-</div>
+@{
+    int index = 0;
+}
+@foreach (KeyValuePair<string, Regex> rule in Engine.Matcher.MatchTable)
+{
+    string key = rule.Key;
+    string value = rule.Value.ToString();
+    <div class="input-group mb-3">
+        <span class="input-group-text">List</span>
+        <InputText @bind-Value="key" @oninput="(e) => SetListName(index, (string)e.Value)" class="form-control" />
+        <span class="input-group-text">Regex</span>
+        <InputText @bind-Value="value" class="form-control" />
+        <button class="btn btn-outline-secondary" type="button">⬆️</button>
+        <button class="btn btn-outline-secondary" type="button">⬇️</button>
+    </div>
+    index++;
+}
 
 @code {
     private string Test { get; set; } = "";
+    private void SetListName(int Index, string? NewName)
+    {
+        if (NewName == null) return;
+        Engine.Matcher.MatchTable[Index] = new(NewName, Engine.Matcher.MatchTable[Index].Value);
+    }
 }

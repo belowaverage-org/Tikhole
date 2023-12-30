@@ -24,7 +24,7 @@ namespace Tikhole.Engine
                 if (xRules != null && rulesNode != null)
                 {
                     MatchTable table = new();
-                    foreach (XmlNode xRule in xRules) table.Add(xRule.Name, new Regex(xRule.InnerText));
+                    foreach (XmlNode xRule in xRules) table.Add(new(xRule.Name, new Regex(xRule.InnerText)));
                     Matcher.MatchTable = table;
                 }
                 Logger.Success("Config " + ConfigFileName + " read.");

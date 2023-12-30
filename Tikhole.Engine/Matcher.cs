@@ -8,12 +8,12 @@ namespace Tikhole.Engine
         public static uint Matches = 0;
         public static MatchTable MatchTable = new()
         {
-            { "Apple", new("^.*\\.?apple\\.com$") },
-            { "Google", new("^.*\\.?google\\.com$") },
-            { "Reddit", new("^.*\\.?reddit\\.com$") },
-            { "Youtube", new("^.*\\.?youtube\\.com$") },
-            { "Microsoft", new("^.*\\.?microsoft\\.com$") },
-            { "Facebook", new("^.*\\.?facebook\\.com$") }
+            new ("Apple", new("^.*\\.?apple\\.com$")),
+            new ("Google", new("^.*\\.?google\\.com$")),
+            new ("Reddit", new ("^.*\\.?reddit\\.com$")),
+            new ("Youtube", new ("^.*\\.?youtube\\.com$")),
+            new ("Microsoft", new("^.*\\.?microsoft\\.com$")),
+            new ("Facebook", new("^.*\\.?facebook\\.com$"))
         };
         public event EventHandler<ResponseMatchedEventArgs>? ResponseMatched;
         public Matcher()
@@ -82,7 +82,7 @@ namespace Tikhole.Engine
             }
         }
     }
-    public class MatchTable : Dictionary<string, Regex> { }
+    public class MatchTable : List<KeyValuePair<string, Regex>> { }
     public class ResponseMatchedEventArgs : EventArgs
     {
         public required ParsedResponseDataEventArgs ParsedResponseData;
