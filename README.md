@@ -1,1 +1,1 @@
-# DNS2TIK
+# Tikhole
