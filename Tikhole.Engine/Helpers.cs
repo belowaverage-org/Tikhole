@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Xml;
 
-namespace Tikhole
+namespace Tikhole.Engine
 {
     public static class Helpers
     {

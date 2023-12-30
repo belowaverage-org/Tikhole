@@ -1,4 +1,4 @@
-﻿namespace Tikhole
+﻿namespace Tikhole.Engine
 {
     public static class Logger
     {

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Tikhole
+namespace Tikhole.Engine
 {
     public class Tikhole
     {

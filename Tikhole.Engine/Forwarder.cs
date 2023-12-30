@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace Tikhole
+namespace Tikhole.Engine
 {
     public class Forwarder
     {

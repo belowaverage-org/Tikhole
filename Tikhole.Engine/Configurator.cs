@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace Tikhole
+namespace Tikhole.Engine
 {
     public class Configurator
     {
