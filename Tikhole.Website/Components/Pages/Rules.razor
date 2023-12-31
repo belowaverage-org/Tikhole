@@ -4,35 +4,93 @@
 
 <PageTitle>📃 Rules</PageTitle>
 
+@if (Error != "")
+{
+    <div class="toast show position-fixed bottom-0 end-0 m-3">
+        <div class="toast-header">
+            <strong class="me-auto">⚠️ Error</strong>
+        </div>
+        <div class="toast-body">
+            @Error
+        </div>
+    </div>
+}
+
 <h1>📃 Rules</h1>
 <p class="text-secondary">
     <small>A list of IP List Names and their corresponding regular expression. Changes made here are in real-time.</small>
 </p>
 <hr />
-
+<button class="btn btn-dark float-end mb-3" @onclick="() => Engine.Matcher.MatchTable.Add(new())">➕ Add</button>
 @{
     int index = 0;
 }
 @foreach (KeyValuePair<string, Regex> rule in Engine.Matcher.MatchTable)
 {
-    string key = rule.Key;
-    string value = rule.Value.ToString();
+    string? key = rule.Key;
+    string? value = rule.Value?.ToString();
+    int thisIndex = index;
     <div class="input-group mb-3">
         <span class="input-group-text">List</span>
-        <InputText @bind-Value="key" @oninput="(e) => SetListName(index, (string)e.Value)" class="form-control" />
+        <InputText @bind-Value="key" @oninput="(e) => SetRuleName(thisIndex, e)" class="form-control" />
         <span class="input-group-text">Regex</span>
-        <InputText @bind-Value="value" class="form-control" />
-        <button class="btn btn-outline-secondary" type="button">⬆️</button>
-        <button class="btn btn-outline-secondary" type="button">⬇️</button>
+        <InputText @bind-Value="value" @oninput="(e) => SetRuleRegex(thisIndex, e)" class="form-control" />
+        <button class="btn btn-outline-secondary" @onclick="() => MoveRuleUp(thisIndex)">⬆️</button>
+        <button class="btn btn-outline-secondary" @onclick="() => MoveRuleDown(thisIndex)">⬇️</button>
+        <button class="btn btn-outline-secondary" @onclick="() => RemoveRule(thisIndex)">❌</button>
     </div>
     index++;
 }
 
 @code {
-    private string Test { get; set; } = "";
-    private void SetListName(int Index, string? NewName)
+    private string Error { get; set; } = "";
+    private void SetRuleName(int Index, ChangeEventArgs Event)
     {
-        if (NewName == null) return;
-        Engine.Matcher.MatchTable[Index] = new(NewName, Engine.Matcher.MatchTable[Index].Value);
+        try
+        {
+            if (Event.Value == null) return;
+            Engine.Matcher.MatchTable[Index] = new((string)Event.Value, Engine.Matcher.MatchTable[Index].Value);
+            Engine.Tikhole.Configurator?.SaveConfig();
+            Error = "";
+        }
+        catch (Exception e)
+        {
+            Error = e.Message;
+        }
+    }
+    private void SetRuleRegex(int Index, ChangeEventArgs Event)
+    {
+        try
+        {
+            if (Event.Value == null) return;
+            Engine.Matcher.MatchTable[Index] = new(Engine.Matcher.MatchTable[Index].Key, new Regex((string)Event.Value));
+            Engine.Tikhole.Configurator?.SaveConfig();
+            Error = "";
+        }
+        catch (Exception e)
+        {
+            Error = e.Message;
+        }
+    }
+    private void RemoveRule(int Index)
+    {
+        Engine.Matcher.MatchTable.RemoveAt(Index);
+        Engine.Tikhole.Configurator?.SaveConfig();
+    }
+    private void MoveRuleUp(int Index)
+    {
+        if (Index == 0) return;
+        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTable[Index];
+        Engine.Matcher.MatchTable.RemoveAt(Index);
+        Engine.Matcher.MatchTable.Insert(Index - 1, rule);
+        Engine.Tikhole.Configurator?.SaveConfig();
+    }
+    private void MoveRuleDown(int Index)
+    {
+        if (Index == Engine.Matcher.MatchTable.Count - 1) return;
+        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTable[Index];
+        Engine.Matcher.MatchTable.RemoveAt(Index);
+        Engine.Matcher.MatchTable.Insert(Index + 1, rule);
+        Engine.Tikhole.Configurator?.SaveConfig();
     }
 }

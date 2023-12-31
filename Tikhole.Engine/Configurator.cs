@@ -53,15 +53,17 @@ namespace Tikhole.Engine
                 XmlNode? rules = root?.AppendChild(config.CreateElement("Matcher"))?.AppendChild(config.CreateElement("Rules"));
                 foreach (KeyValuePair<string, Regex> rule in Matcher.MatchTable)
                 {
+                    if (rule.Key == null || rule.Key == string.Empty) continue;
                     XmlNode? node = rules?.AppendChild(config.CreateElement(rule.Key));
-                    if (node != null) node.InnerText = rule.Value.ToString();
+                    if (node != null && rule.Value != null) node.InnerText = rule.Value.ToString();
                 }
                 config.Save(ConfigFileName);
                 Logger.Success("Config saved to " + ConfigFileName + ".");
             }
-            catch
+            catch (Exception e)
             {
                 Logger.Error("Failed to save config to " + ConfigFileName + ".");
+                throw new Exception(e.Message);
             }
         }
     }

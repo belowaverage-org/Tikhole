@@ -43,6 +43,10 @@
     color: white;
 }
 
+.btn-dark {
+    background-color: #393939;
+}
+
 :root {
     --bs-body-color: #d7d7d7;
     --bs-body-bg: #232323;

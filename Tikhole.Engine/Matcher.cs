@@ -35,6 +35,7 @@ namespace Tikhole.Engine
             }
             foreach (KeyValuePair<string, Regex> matcher in MatchTable)
             {
+                if (matcher.Key == null || matcher.Key == string.Empty || matcher.Value == null) continue;
                 List<string> matchedNames = new();
                 List<string> aliases = new();
                 List<IPAddress> addresses = new();
