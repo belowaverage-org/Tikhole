@@ -4,7 +4,7 @@ namespace Tikhole.Engine
 {
     public class Responder
     {
-        public static bool WaitForMatcherAndCommitter = false;
+        public static bool WaitForMatcherAndCommitter = true;
         public Responder()
         {
             if (Tikhole.Forwarder != null) Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
