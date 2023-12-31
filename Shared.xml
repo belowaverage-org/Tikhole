@@ -1,0 +1,19 @@
+<Project>
+    <PropertyGroup>
+		<Version>0.0.0.0</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<Title>Tikhole</Title>
+		<Product>$(Title)</Product>
+		<PackageId>$(Title)</PackageId>
+		<Company>below average</Company>
+		<Authors>$(Company)</Authors>
+		<Copyright>$(Company) (C) 2023</Copyright>
+		<Description>$(Title): DNS based firewall filtering.</Description>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<PublishAot>true</PublishAot>
+		<Trimming>full</Trimming>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+</Project>

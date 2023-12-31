@@ -7,6 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tikhole.Engine", "Tikhole.E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tikhole.Website", "Tikhole.Website\Tikhole.Website.csproj", "{D1A7D6E3-D29B-4C18-AD30-B46070F57C98}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{39276DC8-BDBA-4F8A-BB76-2C09E3C30412}"
+	ProjectSection(SolutionItems) = preProject
+		Shared.xml = Shared.xml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

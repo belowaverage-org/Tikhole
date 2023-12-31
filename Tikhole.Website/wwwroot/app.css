@@ -47,6 +47,10 @@
     background-color: #393939;
 }
 
+.text-secondary {
+    color: rgb(255 255 255 / 30%) !important;
+}
+
 :root {
     --bs-body-color: #d7d7d7;
     --bs-body-bg: #232323;

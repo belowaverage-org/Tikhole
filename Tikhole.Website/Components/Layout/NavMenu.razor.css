@@ -44,7 +44,7 @@
     }
 
     .nav-item:last-of-type {
-        padding-bottom: 1rem;
+        padding-bottom: 0;
     }
 
     .nav-item ::deep .nav-link {
@@ -63,6 +63,10 @@
     background-color: rgba(255,255,255,0.37);
     color: white;
 }
+
+    .nav-item ::deep .nav-link {
+        background-color: rgba(255,255,255,0.03);
+    }
 
 .nav-item ::deep .nav-link:hover {
     background-color: rgba(255,255,255,0.1);
