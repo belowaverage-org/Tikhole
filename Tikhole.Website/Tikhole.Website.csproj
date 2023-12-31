@@ -7,6 +7,6 @@
 		<None Remove="Tikhole.xml" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Tikhole.Engine\Tikhole.Engine.csproj" />
+	  <ProjectReference Include="..\Tikhole.Engine\Tikhole.Engine.csproj" />
 	</ItemGroup>
 </Project>
