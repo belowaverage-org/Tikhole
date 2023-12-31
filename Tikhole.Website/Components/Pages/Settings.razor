@@ -49,6 +49,14 @@
         <div class="form-text">This is the DNS server that requests recieved by Tikhole are sent to.</div>
     </div>
     <hr />
+    <h5>⏪ Responder Settings</h5>
+    <hr />
+    <div class="mb-3">
+        <label class="form-label">Respond After Match and or Commit</label>
+        <InputText @bind-Value="ResponderWaitForMatchCommit" class="form-control" />
+        <div class="form-text">Wait for the matching and committer engine before replying to a DNS query.</div>
+    </div>
+    <hr />
     <h5>📜 Logger Settings</h5>
     <hr />
     <div class="mb-3">
@@ -126,6 +134,26 @@
             try
             {
                 Engine.Forwarder.DNSServer = IPEndPoint.Parse(value);
+                Engine.Tikhole.Configurator?.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+    private string ResponderWaitForMatchCommit
+    {
+        get
+        {
+            return Engine.Responder.WaitForMatcherAndCommitter.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Responder.WaitForMatcherAndCommitter = bool.Parse(value);
                 Engine.Tikhole.Configurator?.SaveConfig();
                 Error = "";
             }

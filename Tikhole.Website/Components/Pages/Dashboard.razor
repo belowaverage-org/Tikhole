@@ -39,9 +39,10 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (Engine.Tikhole.Listener != null) Engine.Tikhole.Listener.RecievedRequestData += Listener_RecievedRequestData;
+        if (Engine.Tikhole.Listener != null) Engine.Tikhole.Listener.RecievedRequestData += InvokeStateChange;
+        if (Engine.Tikhole.Matcher != null) Engine.Tikhole.Matcher.MatchesMatchedAndOrCommitted += InvokeStateChange;
     }
-    private void Listener_RecievedRequestData(object? sender, EventArgs e)
+    private void InvokeStateChange(object? sender, EventArgs e)
     {
         InvokeAsync(() => StateHasChanged());
     }

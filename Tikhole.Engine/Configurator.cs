@@ -18,6 +18,7 @@ namespace Tikhole.Engine
                 config.ReadSetting("/Tikhole/RouterOS/ApiPassword", ref Committer.Password);
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
                 config.ReadSetting("/Tikhole/Forwarder/DnsEndpoint", ref Forwarder.DNSServer);
+                config.ReadSetting("/Tikhole/Responder/WaitForMatcherAndCommitter", ref Responder.WaitForMatcherAndCommitter);
                 config.ReadSetting("/Tikhole/Logger/VerboseMode", ref Logger.VerboseMode);
                 XmlNode? rulesNode = config.SelectSingleNode("/Tikhole/Matcher/Rules");
                 XmlNodeList? xRules = config.SelectNodes("/Tikhole/Matcher/Rules/*");
@@ -48,6 +49,8 @@ namespace Tikhole.Engine
                 routerOS?.AddSetting("ApiEndpoint", Committer.RouterOSIPEndPoint.ToString());
                 XmlNode? forwarder = root?.AppendChild(config.CreateElement("Forwarder"));
                 forwarder?.AddSetting("DnsEndpoint", Forwarder.DNSServer.ToString());
+                XmlNode? responder = root?.AppendChild(config.CreateElement("Responder"));
+                responder?.AddSetting("WaitForMatcherAndCommitter", Responder.WaitForMatcherAndCommitter.ToString());
                 XmlNode? logger = root?.AppendChild(config.CreateElement("Logger"));
                 logger?.AddSetting("VerboseMode", Logger.VerboseMode.ToString());
                 XmlNode? rules = root?.AppendChild(config.CreateElement("Matcher"))?.AppendChild(config.CreateElement("Rules"));

@@ -4,7 +4,7 @@ namespace Tikhole.Engine
 {
     public class Responder
     {
-        public static bool RespondAfterMatchingAndOrCommit = false;
+        public static bool WaitForMatcherAndCommitter = false;
         public Responder()
         {
             if (Tikhole.Forwarder != null) Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
@@ -18,14 +18,14 @@ namespace Tikhole.Engine
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {
-            if (!RespondAfterMatchingAndOrCommit) _ = Task.Run(() =>
+            if (!WaitForMatcherAndCommitter) _ = Task.Run(() =>
             {
                 Respond(e.Data, e.RecievedRequestData.IPEndPoint);
             });
         }
         private void Matcher_MatchesMatchedAndOrCommitted(object? sender, ParsedResponseDataEventArgs e)
         {
-            if (RespondAfterMatchingAndOrCommit)
+            if (WaitForMatcherAndCommitter)
             {
                 Respond(e.RecievedResponseData.Data, e.RecievedResponseData.RecievedRequestData.IPEndPoint);
             }
