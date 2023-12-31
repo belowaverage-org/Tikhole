@@ -38,7 +38,7 @@
                         packet.Answers[i].Data[di] = e.Data[index++];
                     }
                 }
-                _ = Task.Run(() => ParsedResponseData?.Invoke(null, new() { RecievedResponseData = e, DNSPacket = packet }));
+                ParsedResponseData?.Invoke(null, new() { RecievedResponseData = e, DNSPacket = packet });
             });
         }
     }

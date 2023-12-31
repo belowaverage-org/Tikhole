@@ -37,64 +37,62 @@ namespace Tikhole.Engine
         }
         private void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
         {
-            _ = Task.Run(() => {
-                if (!Semaphore.Wait(1000)) return;
-                try
+            if (!Semaphore.Wait(1000)) return;
+            try
+            {
+                if (!TcpClient.Connected) Login();
+                if (Logger.VerboseMode)
                 {
-                    if (!TcpClient.Connected) Login();
-                    if (Logger.VerboseMode)
+                    List<string> sAddresses = new();
+                    foreach (IPAddress address in e.Addresses) sAddresses.Add(address.ToString());
+                    Logger.Verbose("Match found, committing " + string.Join(", ", sAddresses) + " under " + e.AddressListName + " to " + Committer.RouterOSIPEndPoint.ToString() + "...");
+                }
+                foreach (IPAddress address in e.Addresses)
+                {
+                    string v6 = "";
+                    string cidr = "";
+                    string comment = "";
+                    //string comment = "Tikhole: " + string.Join(", ", e.MatchedNames);
+                    if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        List<string> sAddresses = new();
-                        foreach (IPAddress address in e.Addresses) sAddresses.Add(address.ToString());
-                        Logger.Verbose("Match found, committing " + string.Join(", ", sAddresses) + " under " + e.AddressListName + " to " + Committer.RouterOSIPEndPoint.ToString() + "...");
+                        v6 = "v6";
+                        cidr = "/128";
                     }
-                    foreach (IPAddress address in e.Addresses)
+                    string[] response = TcpClient.SendSentence([
+                        "/ip" + v6 + "/firewall/address-list/print",
+                        "=.proplist=.id",
+                        "?list=" + e.AddressListName,
+                        "?address=" + address.ToString() + cidr
+                    ]);
+                    Committed++;
+                    if (response.Length == 3)
                     {
-                        string v6 = "";
-                        string cidr = "";
-                        string comment = "";
-                        //string comment = "Tikhole: " + string.Join(", ", e.MatchedNames);
-                        if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                        {
-                            v6 = "v6";
-                            cidr = "/128";
-                        }
-                        string[] response = TcpClient.SendSentence([
-                            "/ip" + v6 + "/firewall/address-list/print",
-                            "=.proplist=.id",
-                            "?list=" + e.AddressListName,
-                            "?address=" + address.ToString() + cidr
-                        ]);
-                        Committed++;
-                        if (response.Length == 3)
-                        {
-                            TcpClient.SendSentence([
-                                "/ip" + v6 + "/firewall/address-list/set",
-                                response[1],
-                                "=comment=" + comment,
-                                "=timeout=" + ListTTL
-                            ]);
-                            continue;
-                        }
                         TcpClient.SendSentence([
-                            "/ip" + v6 + "/firewall/address-list/add",
-                            "=list=" + e.AddressListName,
+                            "/ip" + v6 + "/firewall/address-list/set",
+                            response[1],
                             "=comment=" + comment,
-                            "=address=" + address.ToString() + cidr,
                             "=timeout=" + ListTTL
                         ]);
+                        continue;
                     }
+                    TcpClient.SendSentence([
+                        "/ip" + v6 + "/firewall/address-list/add",
+                        "=list=" + e.AddressListName,
+                        "=comment=" + comment,
+                        "=address=" + address.ToString() + cidr,
+                        "=timeout=" + ListTTL
+                    ]);
                 }
-                catch
-                {
-                    TcpClient.Close();
-                    Logger.Warning("Connection lost to " + RouterOSIPEndPoint.ToString() + ".");
-                }
-                finally
-                {
-                    Semaphore.Release();
-                }
-            });
+            }
+            catch
+            {
+                TcpClient.Close();
+                Logger.Warning("Connection lost to " + RouterOSIPEndPoint.ToString() + ".");
+            }
+            finally
+            {
+                Semaphore.Release();
+            }
         }
     }
 }

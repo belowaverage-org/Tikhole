@@ -16,20 +16,22 @@ namespace Tikhole.Engine
             new ("Facebook", new("^.*\\.?facebook\\.com$"))
         };
         public event EventHandler<ResponseMatchedEventArgs>? ResponseMatched;
+        public event EventHandler<ParsedResponseDataEventArgs>? MatchesMatchedAndOrCommitted;
         public Matcher()
         {
             if (Tikhole.Parser != null) Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
         }
         private void Parser_ParsedResponseData(object? sender, ParsedResponseDataEventArgs e)
         {
-            _ = Task.Run(() => {
+            try
+            {
+                if (e.DNSPacket.Answers.Length == 0)
+                {
+                    if (Logger.VerboseMode) Logger.Verbose("Response has no answers.");
+                    return;
+                }
                 if (Logger.VerboseMode)
                 {
-                    if (e.DNSPacket.Answers.Length == 0)
-                    {
-                        Logger.Verbose("Response has no answers.");
-                        return;
-                    }
                     List<string> names = new();
                     foreach (DNSResourceRecord answer in e.DNSPacket.Answers) names.Add(answer.Name);
                     Logger.Verbose("Response parsed as " + string.Join(", ", names) + ", checking for matches...");
@@ -72,17 +74,21 @@ namespace Tikhole.Engine
                         }
                     }
                     if (addresses.Count == 0) continue;
-                    _ = Task.Run(() => ResponseMatched?.Invoke(null, new()
+                    ResponseMatched?.Invoke(null, new()
                     {
                         ParsedResponseData = e,
                         AddressListName = matcher.Key,
                         MatchedNames = matchedNames.ToArray(),
                         Aliases = aliases.ToArray(),
                         Addresses = addresses.ToArray()
-                    }));
+                    });
                     Matches++;
                 }
-            });
+            }
+            finally
+            {
+                MatchesMatchedAndOrCommitted?.Invoke(null, e);
+            }
         }
     }
     public class MatchTable : List<KeyValuePair<string, Regex>> { }

@@ -8,10 +8,10 @@ namespace Tikhole.Engine
         public static Configurator? Configurator;
         public static Listener? Listener;
         public static Forwarder? Forwarder;
-        public static Responder? Responder;
         public static Parser? Parser;
         public static Matcher? Matcher;
         public static Committer? Committer;
+        public static Responder? Responder;
         public static void Main()
         {
             Logger.Info(Assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product + " v" + Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
@@ -20,10 +20,10 @@ namespace Tikhole.Engine
             Configurator.SaveConfig();
             Listener = new Listener();
             Forwarder = new Forwarder();
-            Responder = new Responder();
             Parser = new Parser();
             Matcher = new Matcher();
             Committer = new Committer();
+            Responder = new Responder();
             Thread.Sleep(-1);
         }
     }
