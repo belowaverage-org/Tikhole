@@ -8,9 +8,11 @@
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {
-            if (Tikhole.Listener == null) return;
-            if (Logger.VerboseMode) Logger.Verbose("Recieved response from " + Forwarder.DNSServer.ToString() + ", forwarding to " + e.RecievedRequestData.IPEndPoint.ToString() + "...");
-            Listener.Client.Send(e.Data, e.RecievedRequestData.IPEndPoint);
+            _ = Task.Run(() => { 
+                if (Tikhole.Listener == null) return;
+                if (Logger.VerboseMode) Logger.Verbose("Recieved response from " + Forwarder.DNSServer.ToString() + ", forwarding to " + e.RecievedRequestData.IPEndPoint.ToString() + "...");
+                Listener.Client.Send(e.Data, e.RecievedRequestData.IPEndPoint);
+            });
         }
     }
 }

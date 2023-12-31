@@ -22,65 +22,67 @@ namespace Tikhole.Engine
         }
         private void Parser_ParsedResponseData(object? sender, ParsedResponseDataEventArgs e)
         {
-            if (Logger.VerboseMode)
-            {
-                if (e.DNSPacket.Answers.Length == 0)
+            _ = Task.Run(() => {
+                if (Logger.VerboseMode)
                 {
-                    Logger.Verbose("Response has no answers.");
-                    return;
+                    if (e.DNSPacket.Answers.Length == 0)
+                    {
+                        Logger.Verbose("Response has no answers.");
+                        return;
+                    }
+                    List<string> names = new();
+                    foreach (DNSResourceRecord answer in e.DNSPacket.Answers) names.Add(answer.Name);
+                    Logger.Verbose("Response parsed as " + string.Join(", ", names) + ", checking for matches...");
                 }
-                List<string> names = new();
-                foreach (DNSResourceRecord answer in e.DNSPacket.Answers) names.Add(answer.Name);
-                Logger.Verbose("Response parsed as " + string.Join(", ", names) + ", checking for matches...");
-            }
-            foreach (KeyValuePair<string, Regex> matcher in MatchTable)
-            {
-                if (matcher.Key == null || matcher.Key == string.Empty || matcher.Value == null) continue;
-                List<string> matchedNames = new();
-                List<string> aliases = new();
-                List<IPAddress> addresses = new();
-                foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
+                foreach (KeyValuePair<string, Regex> matcher in MatchTable)
                 {
-                    if (!matchedNames.Contains(answer.Name) && matcher.Value.IsMatch(answer.Name)) matchedNames.Add(answer.Name);
-                }
-                while (true)
-                {
-                    bool matched = false;
+                    if (matcher.Key == null || matcher.Key == string.Empty || matcher.Value == null) continue;
+                    List<string> matchedNames = new();
+                    List<string> aliases = new();
+                    List<IPAddress> addresses = new();
                     foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
                     {
-                        if (answer.Type != DNSType.CNAME) continue;
-                        if (matcher.Value.IsMatch(answer.Name) || aliases.Contains(answer.Name))
+                        if (!matchedNames.Contains(answer.Name) && matcher.Value.IsMatch(answer.Name)) matchedNames.Add(answer.Name);
+                    }
+                    while (true)
+                    {
+                        bool matched = false;
+                        foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
                         {
-                            int index = answer.DataIndex;
-                            string data = e.RecievedResponseData.Data.ToLabelsString(ref index);
-                            if (!aliases.Contains(data))
+                            if (answer.Type != DNSType.CNAME) continue;
+                            if (matcher.Value.IsMatch(answer.Name) || aliases.Contains(answer.Name))
                             {
-                                aliases.Add(data);
-                                matched = true;
+                                int index = answer.DataIndex;
+                                string data = e.RecievedResponseData.Data.ToLabelsString(ref index);
+                                if (!aliases.Contains(data))
+                                {
+                                    aliases.Add(data);
+                                    matched = true;
+                                }
                             }
                         }
+                        if (!matched) break;
                     }
-                    if (!matched) break;
-                }
-                foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
-                {
-                    if (answer.Type != DNSType.A && answer.Type != DNSType.AAAA) continue;
-                    if (matcher.Value.IsMatch(answer.Name) || aliases.Contains(answer.Name))
+                    foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
                     {
-                        addresses.AddRange(answer.ToAddresses());
+                        if (answer.Type != DNSType.A && answer.Type != DNSType.AAAA) continue;
+                        if (matcher.Value.IsMatch(answer.Name) || aliases.Contains(answer.Name))
+                        {
+                            addresses.AddRange(answer.ToAddresses());
+                        }
                     }
+                    if (addresses.Count == 0) continue;
+                    _ = Task.Run(() => ResponseMatched?.Invoke(null, new()
+                    {
+                        ParsedResponseData = e,
+                        AddressListName = matcher.Key,
+                        MatchedNames = matchedNames.ToArray(),
+                        Aliases = aliases.ToArray(),
+                        Addresses = addresses.ToArray()
+                    }));
+                    Matches++;
                 }
-                if (addresses.Count == 0) continue;
-                ResponseMatched?.Invoke(null, new()
-                {
-                    ParsedResponseData = e,
-                    AddressListName = matcher.Key,
-                    MatchedNames = matchedNames.ToArray(),
-                    Aliases = aliases.ToArray(),
-                    Addresses = addresses.ToArray()
-                });
-                Matches++;
-            }
+            });
         }
     }
     public class MatchTable : List<KeyValuePair<string, Regex>> { }
