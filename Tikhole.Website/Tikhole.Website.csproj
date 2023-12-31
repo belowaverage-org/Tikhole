@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Components\Pages\Signin.razor.css" />
     <None Remove="Tikhole.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Components\Pages\Signin.razor.css" />
   </ItemGroup>
 
   <ItemGroup>

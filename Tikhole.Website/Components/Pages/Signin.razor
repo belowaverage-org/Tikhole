@@ -1,0 +1,96 @@
+﻿@using System.Net.Sockets
+@using global::Tikhole.Engine
+
+@if (LoggedIn)
+{
+    @ChildContent
+}
+else
+{
+    @if (Error != "")
+    {
+        <div class="toast show position-fixed bottom-0 end-0 m-3">
+            <div class="toast-header">
+                <strong class="me-auto">⚠️ Error</strong>
+            </div>
+            <div class="toast-body">
+                @Error
+            </div>
+        </div>
+    }
+    
+    <div class="card position-fixed top-50 start-50 translate-middle" style="width:350px;">
+        <div class="card-body">
+            <img class="card-img-top p-3" style="filter:invert();" src="logo.svg" />
+            @if (Loading)
+            {
+                <div class="text-center mt-3">
+                    <div class="spinner-grow" role="status"></div>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <InputText @bind-Value="UserName" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <InputText @bind-Value="Password" class="form-control" type="password" @onkeydown='(e) => { if (e.Key == "Enter") PerformLogin(); }' />
+                    </div>
+                    <button id="submit" class="btn btn-dark float-end" @onclick="PerformLogin">Login</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    private bool LoggedIn = false;
+    private bool Loading = false;
+    private string Error = "";
+    private string UserName = "";
+    private string Password = "";
+    private async void PerformLogin()
+    {
+        Loading = true;
+        Error = "";
+        await Task.Run(() =>
+        {
+            TcpClient client = new();
+            try
+            {
+                client.Connect(Engine.Committer.RouterOSIPEndPoint);
+                string[] response = client.SendSentence([
+                    "/login",
+                    "=name=" + UserName,
+                    "=password=" + Password
+                ]);
+                if (response[0] == "!done")
+                {
+                    LoggedIn = true;
+                }
+                else
+                {
+                    if (response.Length == 3)
+                    {
+                        Error = response[1];
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+            finally
+            {
+                client.Close();
+            }
+        });
+        Loading = false;
+        StateHasChanged();
+    }
+}

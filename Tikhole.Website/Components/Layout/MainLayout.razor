@@ -1,14 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-    <main>
-        <article class="content p-4">
-            @Body
-        </article>
-    </main>
+    <Signin>
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+        <main>
+            <article class="content p-4">
+                @Body
+            </article>
+        </main>
+    </Signin>
 </div>
 <div id="blazor-error-ui">
     An unhandled error has occurred.
