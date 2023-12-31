@@ -1,0 +1,26 @@
+name: Deploy Tikhole.Website
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Add commit SHA to build
+      run: echo "$GITHUB_SHA" > ./Properties/commit
+    
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ghcr.io/belowaverage-org/tikhole:latest
+      
+    - name: Login
+      run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u krisdb2009 --password-stdin
+
+    - name: Publish the Docker image
+      run: docker push ghcr.io/belowaverage-org/tikhole:latest
