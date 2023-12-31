@@ -81,6 +81,11 @@
     display: block;
 }
 
+small {
+    font-size: 12px;
+    line-height: 10px;
+}
+
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;

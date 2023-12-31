@@ -7,6 +7,8 @@
 }
 else
 {
+    <PageTitle>🔑 Login</PageTitle>
+
     @if (Error != "")
     {
         <div class="toast show position-fixed bottom-0 end-0 m-3">
@@ -37,7 +39,7 @@ else
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
-                        <InputText @bind-Value="Password" class="form-control" type="password" @onkeydown='(e) => { if (e.Key == "Enter") PerformLogin(); }' />
+                        <InputText @bind-Value="Password" class="form-control" type="password" onkeydown="(function(e){if(e.key=='Enter'){document.getElementById('submit').focus()}})(event)" />
                     </div>
                     <button id="submit" class="btn btn-dark float-end" @onclick="PerformLogin">Login</button>
                 </div>
