@@ -3,9 +3,7 @@
 		<Version>0.0.0.0</Version>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
 		<FileVersion>$(Version)</FileVersion>
-		<Title>Tikhole</Title>
 		<Product>$(Title)</Product>
-		<PackageId>$(Title)</PackageId>
 		<Company>below average</Company>
 		<Authors>$(Company)</Authors>
 		<Copyright>$(Company) (C) 2023</Copyright>
@@ -15,5 +13,9 @@
 		<Trimming>full</Trimming>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<PublishTrimmed>true</PublishTrimmed>
+		<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     </PropertyGroup>
 </Project>
