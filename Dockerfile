@@ -6,4 +6,5 @@ RUN dotnet publish Tikhole.Website -c Release -o /Tikhole.Website --no-restore
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /Tikhole.Website
 COPY --from=tikholebuild /Tikhole.Website .
+ENV ASPNETCORE_HTTP_PORTS=80
 ENTRYPOINT ./Tikhole.Website

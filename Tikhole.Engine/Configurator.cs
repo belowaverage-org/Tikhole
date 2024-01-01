@@ -5,7 +5,8 @@ namespace Tikhole.Engine
 {
     public class Configurator
     {
-        public static string ConfigFileName = "Tikhole.xml";
+        public static string ConfigFilePath = "./config/";
+        public static string ConfigFileName = ConfigFilePath + "Tikhole.xml";
         public void LoadConfig()
         {
             try
@@ -60,6 +61,7 @@ namespace Tikhole.Engine
                     XmlNode? node = rules?.AppendChild(config.CreateElement(rule.Key));
                     if (node != null && rule.Value != null) node.InnerText = rule.Value.ToString();
                 }
+                if (!Directory.Exists(ConfigFilePath)) _ = Directory.CreateDirectory(ConfigFilePath);
                 config.Save(ConfigFileName);
                 Logger.Success("Config saved to " + ConfigFileName + ".");
             }
