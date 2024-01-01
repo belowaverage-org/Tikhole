@@ -9,13 +9,13 @@
 		<Copyright>$(Company) (C) 2023</Copyright>
 		<Description>$(Title): DNS based firewall filtering.</Description>
 		<NeutralLanguage>en-US</NeutralLanguage>
-		<PublishAot>true</PublishAot>
+		<PublishAot>false</PublishAot>
 		<Trimming>full</Trimming>
+		<PublishTrimmed>true</PublishTrimmed>
+		<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
-		<PublishTrimmed>true</PublishTrimmed>
-		<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     </PropertyGroup>
 </Project>
