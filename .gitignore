@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Tikhole.Website/Tikhole.xml
+/Tikhole.Website/config
