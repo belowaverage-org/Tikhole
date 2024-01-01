@@ -13,7 +13,7 @@ namespace Tikhole.Engine
         public void Respond(byte[] Data, IPEndPoint IPEndPoint)
         {
             if (Tikhole.Listener == null) return;
-            if (Logger.VerboseMode) Logger.Verbose("Recieved response from " + Forwarder.DNSServer.ToString() + ", forwarding to " + IPEndPoint.ToString() + "...");
+            if (Logger.VerboseMode) Logger.Verbose("Forwarding response to " + IPEndPoint.ToString() + "...");
             Listener.Client.Send(Data, IPEndPoint);
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
