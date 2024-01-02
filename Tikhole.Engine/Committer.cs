@@ -102,7 +102,7 @@ namespace Tikhole.Engine
                 Semaphore.Release();
                 if (added)
                 {
-                    Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
+                    if (Logger.VerboseMode) Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
                     Thread.Sleep((int)ComitterDelayMS);
                 }
             }
