@@ -16,7 +16,7 @@ namespace Tikhole.Engine
                 Logger.Info("Starting listnener on " + IPEndPoint.ToString() + "...");
                 Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 Client.Client.Bind(IPEndPoint);
-                _ = Task.Run(() =>
+                Task listener = new Task(() =>
                 {
                     while (Client != null)
                     {
@@ -32,7 +32,8 @@ namespace Tikhole.Engine
                             Logger.Warning("Error receiving request.");
                         }
                     }
-                });
+                }, TaskCreationOptions.LongRunning);
+                listener.Start();
                 Logger.Success("Listener started on " + IPEndPoint.ToString() + ".");
             }
             catch
