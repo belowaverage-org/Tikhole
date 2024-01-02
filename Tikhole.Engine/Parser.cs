@@ -9,7 +9,7 @@
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {
-            _ = Task.Run(() => {
+            Task task = new Task(() => {
                 if (Logger.VerboseMode) Logger.Verbose("Parsing response...");
                 int index = 12;
                 DNSPacket packet = new()
@@ -39,7 +39,8 @@
                     }
                 }
                 ParsedResponseData?.Invoke(null, new() { RecievedResponseData = e, DNSPacket = packet });
-            });
+            }, TaskCreationOptions.LongRunning);
+            task.Start();
         }
     }
     public class ParsedResponseDataEventArgs : EventArgs
