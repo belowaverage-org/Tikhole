@@ -34,6 +34,11 @@
         <label class="form-label">API Password</label>
         <InputText type="password" @bind-Value="CommitterPassword" class="form-control" />
     </div>
+    <div class="mb-3">
+        <label class="form-label">Commit Delay</label>
+        <InputText @bind-Value="ComitterDelayMS" class="form-control" />
+        <div class="form-text">After a DNS response is matched and committed, Tikhole will wait this many milliseconds before forwarding the DNS response since RouterOS takes some time process the new IP on an address list. This only happens on commits that are adding to an address list. Commits that just refresh the timeout do not delay DNS responses.</div>
+    </div>
     <hr />
     <div class="mb-3">
         <label class="form-label">IP List Timeout</label>
@@ -174,6 +179,26 @@
             try
             {
                 Engine.Logger.VerboseMode = bool.Parse(value);
+                Engine.Tikhole.Configurator?.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+    private string ComitterDelayMS
+    {
+        get
+        {
+            return Engine.Committer.ComitterDelayMS.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Committer.ComitterDelayMS = uint.Parse(value);
                 Engine.Tikhole.Configurator?.SaveConfig();
                 Error = "";
             }

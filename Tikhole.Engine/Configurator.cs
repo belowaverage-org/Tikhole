@@ -18,6 +18,8 @@ namespace Tikhole.Engine
                 config.ReadSetting("/Tikhole/RouterOS/ApiUserName", ref Committer.UserName);
                 config.ReadSetting("/Tikhole/RouterOS/ApiPassword", ref Committer.Password);
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
+                config.ReadSetting("/Tikhole/RouterOS/ComitterDelayMS", ref Committer.ComitterDelayMS);
+                config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
                 config.ReadSetting("/Tikhole/Forwarder/DnsEndpoint", ref Forwarder.DNSServer);
                 config.ReadSetting("/Tikhole/Responder/WaitForMatcherAndCommitter", ref Responder.WaitForMatcherAndCommitter);
                 config.ReadSetting("/Tikhole/Logger/VerboseMode", ref Logger.VerboseMode);
@@ -48,6 +50,7 @@ namespace Tikhole.Engine
                 routerOS?.AddSetting("ApiUserName", Committer.UserName);
                 routerOS?.AddSetting("ApiPassword", Committer.Password);
                 routerOS?.AddSetting("ApiEndpoint", Committer.RouterOSIPEndPoint.ToString());
+                routerOS?.AddSetting("ComitterDelayMS", Committer.ComitterDelayMS.ToString());
                 XmlNode? forwarder = root?.AppendChild(config.CreateElement("Forwarder"));
                 forwarder?.AddSetting("DnsEndpoint", Forwarder.DNSServer.ToString());
                 XmlNode? responder = root?.AppendChild(config.CreateElement("Responder"));

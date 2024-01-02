@@ -136,5 +136,10 @@ namespace Tikhole.Engine
             XmlNode? node = Parent.SelectSingleNode(XPath);
             if (node != null) bool.TryParse(node.InnerText, out Value);
         }
+        public static void ReadSetting(this XmlNode Parent, string XPath, ref uint Value)
+        {
+            XmlNode? node = Parent.SelectSingleNode(XPath);
+            if (node != null) uint.TryParse(node.InnerText, out Value);
+        }
     }
 }

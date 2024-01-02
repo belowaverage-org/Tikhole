@@ -9,6 +9,8 @@ namespace Tikhole.Engine
         public static string UserName = "Tikhole";
         public static string Password = "";
         public static uint Committed = 0;
+        public static uint ComitterTimeoutMS = 1000;
+        public static uint ComitterDelayMS = 100;
         public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse("192.168.200.1"), 8728);
         public static TcpClient TcpClient = new();
         private static SemaphoreSlim Semaphore = new(1, 1);
@@ -37,7 +39,12 @@ namespace Tikhole.Engine
         }
         private void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
         {
-            if (!Semaphore.Wait(1000)) return;
+            bool added = false;
+            if (!Semaphore.Wait((int)ComitterTimeoutMS))
+            {
+                Logger.Warning("Committer queued for more than a " + ComitterTimeoutMS + "ms. Commit canceled.");
+                return;
+            }
             try
             {
                 if (!TcpClient.Connected) Login();
@@ -82,6 +89,7 @@ namespace Tikhole.Engine
                         "=address=" + address.ToString() + cidr,
                         "=timeout=" + ListTTL
                     ]);
+                    added = true;
                 }
             }
             catch
@@ -92,6 +100,11 @@ namespace Tikhole.Engine
             finally
             {
                 Semaphore.Release();
+                if (added)
+                {
+                    Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
+                    Thread.Sleep((int)ComitterDelayMS);
+                }
             }
         }
     }
