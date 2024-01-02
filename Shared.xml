@@ -6,8 +6,8 @@
 		<Product>$(Title)</Product>
 		<Company>below average</Company>
 		<Authors>$(Company)</Authors>
-		<Copyright>$(Company) (C) 2023</Copyright>
-		<Description>$(Title): DNS based firewall filtering.</Description>
+		<Copyright>$(Company) (C) 2024</Copyright>
+		<Description>$(Title): DNS based firewall filtering for Mikrotik RouterOS.</Description>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>

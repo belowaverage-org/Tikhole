@@ -36,7 +36,7 @@
         <hr />
         <p class="text-center text-secondary">
             <small>
-                @Name <a href='@("https://github.com/belowaverage-org/" + Name + "/commit/" + Commit)' target="_blank">@Version</a>
+                @Name <a href='@(RepoURL + Commit)' target="_blank">@('v' + Version)</a>
                 <br />
                 @Copyright
             </small>
@@ -49,6 +49,7 @@
     private string Commit = "";
     private string Copyright = "";
     private string Name = "";
+    private string RepoURL = "https://github.com/belowaverage-org/Tikhole/commit/";
     protected override void OnInitialized()
     {
         Assembly assy = Assembly.GetExecutingAssembly();
@@ -58,7 +59,7 @@
         if (ver != null) Version = ver.InformationalVersion.Split('+')[0];
         if (ver != null) Commit = ver.InformationalVersion.Split('+')[1];
         if (copy != null) Copyright = copy.Copyright;
-        if (name != null) Name = name.Product;
+        if (name != null) Name = name.Product.Split('.')[0];
         base.OnInitialized();
     }
 }
