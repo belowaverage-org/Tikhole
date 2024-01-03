@@ -96,25 +96,25 @@ namespace Tikhole.Engine
             }
             else if (wordBytes.Length <= 0x3fff)
             {
-                SentenceBytes.Add((byte)(wLength[1] | 0x8));
+                SentenceBytes.Add((byte)(wLength[1] | 0x80));
                 SentenceBytes.Add(wLength[0]);
             }
             else if (wordBytes.Length <= 0x1fffff)
             {
-                SentenceBytes.Add((byte)(wLength[2] | 0xc));
+                SentenceBytes.Add((byte)(wLength[2] | 0xc0));
                 SentenceBytes.Add(wLength[1]);
                 SentenceBytes.Add(wLength[0]);
             }
             else if (wordBytes.Length <= 0xfffffff)
             {
-                SentenceBytes.Add((byte)(wLength[3] | 0xe));
+                SentenceBytes.Add((byte)(wLength[3] | 0xe0));
                 SentenceBytes.Add(wLength[2]);
                 SentenceBytes.Add(wLength[1]);
                 SentenceBytes.Add(wLength[0]);
             }
             else
             {
-                SentenceBytes.Add((byte)(wLength[4] | 0xf));
+                SentenceBytes.Add((byte)(wLength[4] | 0xf0));
                 SentenceBytes.Add(wLength[3]);
                 SentenceBytes.Add(wLength[2]);
                 SentenceBytes.Add(wLength[1]);
