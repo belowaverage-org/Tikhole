@@ -24,6 +24,7 @@ namespace Tikhole.Engine
             Forwarder = new Forwarder();
             Parser = new Parser();
             Matcher = new Matcher();
+            Committer.TotalInstances = 0;
             for (int i = 0; i < Committer.NeededInstances; i++) new Committer();
             new Responder();
         }

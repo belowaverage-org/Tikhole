@@ -11,7 +11,7 @@ namespace Tikhole.Engine
         public static uint Committed = 0;
         public static uint ComitterTimeoutMS = 1000;
         public static uint ComitterDelayMS = 100;
-        public static uint TotalInstances { get; private set; } = 0;
+        public static uint TotalInstances { get; set; } = 0;
         public static uint NeededInstances = 2;
         public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse("192.168.200.1"), 8728);
         public TcpClient TcpClient = new();

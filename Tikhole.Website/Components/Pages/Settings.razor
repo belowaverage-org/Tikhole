@@ -8,7 +8,8 @@
     <small>A list of Tikhole settings. Changes made here are in real-time.</small>
 </p>
 <hr />
-<button @onclick="StopTikhole" class="btn d-block ms-auto btn-dark">🛑 Stop Tikhole</button>
+<button @onclick="RestartTikhole" class="btn btn-dark">🔃 Restart Tikhole</button>
+<button @onclick="StopTikhole" class="btn btn-dark">🛑 Stop Tikhole</button>
 <hr />
 @if (Error != "")
 {
@@ -18,6 +19,17 @@
         </div>
         <div class="toast-body">
             @Error
+        </div>
+    </div>
+}
+@if (Info != "")
+{
+    <div class="toast show position-fixed bottom-0 end-0 m-3">
+        <div class="toast-header">
+            <strong class="me-auto">ℹ️ Info</strong>
+        </div>
+        <div class="toast-body">
+            @Info
         </div>
     </div>
 }
@@ -79,9 +91,22 @@
 
 @code {
     private string Error { get; set; } = "";
-    private void StopTikhole()
+    private string Info { get; set; } = "";
+    private async void RestartTikhole()
     {
-        if (Tikhole.WebApplication != null) Tikhole.WebApplication.StopAsync();
+        Tikhole.RestartTikhole();
+        Info = "Tikhole engine restarted.";
+        await Task.Delay(3000);
+        Info = "";
+        StateHasChanged();
+    }
+    private async void StopTikhole()
+    {
+        Tikhole.StopTikhole();
+        Info = "Tikhole engine stopped.";
+        await Task.Delay(3000);
+        Info = "";
+        StateHasChanged();
     }
     private string CommitterEndpoint
     {

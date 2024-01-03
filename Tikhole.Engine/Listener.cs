@@ -18,7 +18,7 @@ namespace Tikhole.Engine
                 Client.Client.Bind(IPEndPoint);
                 Task listener = new Task(() =>
                 {
-                    while (Client != null)
+                    while (Client.Client != null)
                     {
                         IPEndPoint? ipEndPoint = null;
                         try
@@ -32,6 +32,7 @@ namespace Tikhole.Engine
                             Logger.Warning("Error receiving request.");
                         }
                     }
+                    Logger.Info("Listener stopped.");
                 }, TaskCreationOptions.LongRunning);
                 listener.Start();
                 Logger.Success("Listener started on " + IPEndPoint.ToString() + ".");

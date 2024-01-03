@@ -17,5 +17,14 @@ namespace Tikhole.Website
             WebApplication.MapRazorComponents<App>().AddInteractiveServerRenderMode();
             WebApplication.Run();
         }
+        public static void StopTikhole()
+        {
+            Engine.Tikhole.Listener?.Client.Close();
+        }
+        public static void RestartTikhole()
+        {
+            Engine.Tikhole.Listener?.Client.Close();
+            _ = Task.Run(() => new Engine.Tikhole());
+        }
     }
 }
