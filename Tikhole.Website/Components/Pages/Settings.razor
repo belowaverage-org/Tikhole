@@ -8,6 +8,8 @@
     <small>A list of Tikhole settings. Changes made here are in real-time.</small>
 </p>
 <hr />
+<button @onclick="StopTikhole" class="btn d-block ms-auto btn-dark">🛑 Stop Tikhole</button>
+<hr />
 @if (Error != "")
 {
     <div class="toast show position-fixed bottom-0 end-0 m-3">
@@ -38,6 +40,11 @@
         <label class="form-label">Commit Delay</label>
         <InputText @bind-Value="ComitterDelayMS" class="form-control" />
         <div class="form-text">After a DNS response is matched and committed, Tikhole will wait this many milliseconds before forwarding the DNS response since RouterOS takes some time process the new IP on an address list. This only happens on commits that are adding to an address list. Commits that just refresh the timeout do not delay DNS responses.</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Connection Count</label>
+        <InputText @bind-Value="CommitterNeededInstances" class="form-control" />
+        <div class="form-text">How many connections should Tikhole open to the RouterOS API? (restart required)</div>
     </div>
     <hr />
     <div class="mb-3">
@@ -72,6 +79,10 @@
 
 @code {
     private string Error { get; set; } = "";
+    private void StopTikhole()
+    {
+        if (Tikhole.WebApplication != null) Tikhole.WebApplication.StopAsync();
+    }
     private string CommitterEndpoint
     {
         get
@@ -83,7 +94,7 @@
             try
             {
                 Engine.Committer.RouterOSIPEndPoint = IPEndPoint.Parse(value);
-                Engine.Tikhole.Configurator?.SaveConfig();
+                Engine.Configurator.SaveConfig();
                 Error = "";
             }
             catch (Exception e)
@@ -101,7 +112,7 @@
         set
         {
             Engine.Committer.UserName = value;
-            Engine.Tikhole.Configurator?.SaveConfig();
+            Engine.Configurator.SaveConfig();
         }
     }
     private string CommitterPassword
@@ -113,7 +124,7 @@
         set
         {
             Engine.Committer.Password = value;
-            Engine.Tikhole.Configurator?.SaveConfig();
+            Engine.Configurator.SaveConfig();
         }
     }
     private string CommiterIPListTimeout
@@ -125,7 +136,7 @@
         set
         {
             Engine.Committer.ListTTL = value;
-            Engine.Tikhole.Configurator?.SaveConfig();
+            Engine.Configurator.SaveConfig();
         }
     }
     private string ForwarderDNSEndpoint
@@ -139,7 +150,7 @@
             try
             {
                 Engine.Forwarder.DNSServer = IPEndPoint.Parse(value);
-                Engine.Tikhole.Configurator?.SaveConfig();
+                Engine.Configurator.SaveConfig();
                 Error = "";
             }
             catch (Exception e)
@@ -159,7 +170,7 @@
             try
             {
                 Engine.Responder.WaitForMatcherAndCommitter = bool.Parse(value);
-                Engine.Tikhole.Configurator?.SaveConfig();
+                Engine.Configurator.SaveConfig();
                 Error = "";
             }
             catch (Exception e)
@@ -179,7 +190,7 @@
             try
             {
                 Engine.Logger.VerboseMode = bool.Parse(value);
-                Engine.Tikhole.Configurator?.SaveConfig();
+                Engine.Configurator.SaveConfig();
                 Error = "";
             }
             catch (Exception e)
@@ -199,7 +210,27 @@
             try
             {
                 Engine.Committer.ComitterDelayMS = uint.Parse(value);
-                Engine.Tikhole.Configurator?.SaveConfig();
+                Engine.Configurator.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+    private string CommitterNeededInstances
+    {
+        get
+        {
+            return Engine.Committer.NeededInstances.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Committer.NeededInstances = uint.Parse(value);
+                Engine.Configurator.SaveConfig();
                 Error = "";
             }
             catch (Exception e)

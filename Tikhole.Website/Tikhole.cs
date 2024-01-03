@@ -4,17 +4,18 @@ namespace Tikhole.Website
 {
     public class Tikhole
     {
+        public static WebApplication? WebApplication;
         public static void Main(string[] args)
         {
-            _ = Task.Run(() => Engine.Tikhole.Main());
+            _ = Task.Run(() => new Engine.Tikhole());
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-            var app = builder.Build();
-            if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Error");
-            app.UseStaticFiles();
-            app.UseAntiforgery();
-            app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
-            app.Run();
+            WebApplication = builder.Build();
+            if (!WebApplication.Environment.IsDevelopment()) WebApplication.UseExceptionHandler("/Error");
+            WebApplication.UseStaticFiles();
+            WebApplication.UseAntiforgery();
+            WebApplication.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+            WebApplication.Run();
         }
     }
 }

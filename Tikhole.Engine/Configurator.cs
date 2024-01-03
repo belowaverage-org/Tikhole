@@ -3,11 +3,11 @@ using System.Xml;
 
 namespace Tikhole.Engine
 {
-    public class Configurator
+    public static class Configurator
     {
         public static string ConfigFilePath = "./config/";
         public static string ConfigFileName = ConfigFilePath + "Tikhole.xml";
-        public void LoadConfig()
+        public static void LoadConfig()
         {
             try
             {
@@ -20,6 +20,7 @@ namespace Tikhole.Engine
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
                 config.ReadSetting("/Tikhole/RouterOS/ComitterDelayMS", ref Committer.ComitterDelayMS);
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
+                config.ReadSetting("/Tikhole/RouterOS/ApiConnections", ref Committer.NeededInstances);
                 config.ReadSetting("/Tikhole/Forwarder/DnsEndpoint", ref Forwarder.DNSServer);
                 config.ReadSetting("/Tikhole/Responder/WaitForMatcherAndCommitter", ref Responder.WaitForMatcherAndCommitter);
                 config.ReadSetting("/Tikhole/Logger/VerboseMode", ref Logger.VerboseMode);
@@ -38,7 +39,7 @@ namespace Tikhole.Engine
                 Logger.Error("Could not read config at " + ConfigFileName + ".");
             }
         }
-        public void SaveConfig()
+        public static void SaveConfig()
         {
             try
             {
@@ -50,6 +51,7 @@ namespace Tikhole.Engine
                 routerOS?.AddSetting("ApiUserName", Committer.UserName);
                 routerOS?.AddSetting("ApiPassword", Committer.Password);
                 routerOS?.AddSetting("ApiEndpoint", Committer.RouterOSIPEndPoint.ToString());
+                routerOS?.AddSetting("ApiConnections", Committer.NeededInstances.ToString());
                 routerOS?.AddSetting("ComitterDelayMS", Committer.ComitterDelayMS.ToString());
                 XmlNode? forwarder = root?.AppendChild(config.CreateElement("Forwarder"));
                 forwarder?.AddSetting("DnsEndpoint", Forwarder.DNSServer.ToString());

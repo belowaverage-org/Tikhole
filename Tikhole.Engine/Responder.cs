@@ -14,7 +14,7 @@ namespace Tikhole.Engine
         {
             if (Tikhole.Listener == null) return;
             if (Logger.VerboseMode) Logger.Verbose("Forwarding response to " + IPEndPoint.ToString() + "...");
-            Listener.Client.Send(Data, IPEndPoint);
+            Tikhole.Listener.Client.Send(Data, IPEndPoint);
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {

@@ -11,11 +11,16 @@ namespace Tikhole.Engine
         public static uint Committed = 0;
         public static uint ComitterTimeoutMS = 1000;
         public static uint ComitterDelayMS = 100;
+        public static uint TotalInstances { get; private set; } = 0;
+        public static uint NeededInstances = 2;
         public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse("192.168.200.1"), 8728);
-        public static TcpClient TcpClient = new();
-        private static SemaphoreSlim Semaphore = new(1, 1);
+        public TcpClient TcpClient = new();
+        private uint InstanceID = 0;
+        private uint ResponsesRecieved = 0;
+        private SemaphoreSlim Semaphore = new(1, 1);
         public Committer()
         {
+            InstanceID = TotalInstances++;
             if (Tikhole.Matcher != null) Tikhole.Matcher.ResponseMatched += Matcher_ResponseMatched;
         }
         private void Login()
@@ -39,6 +44,7 @@ namespace Tikhole.Engine
         }
         private void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
         {
+            if (ResponsesRecieved++ % TotalInstances != InstanceID) return;
             bool added = false;
             if (!Semaphore.Wait((int)ComitterTimeoutMS))
             {

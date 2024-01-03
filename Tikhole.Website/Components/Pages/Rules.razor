@@ -49,7 +49,7 @@
         {
             if (Event.Value == null) return;
             Engine.Matcher.MatchTable[Index] = new((string)Event.Value, Engine.Matcher.MatchTable[Index].Value);
-            Engine.Tikhole.Configurator?.SaveConfig();
+            Engine.Configurator.SaveConfig();
             Error = "";
         }
         catch (Exception e)
@@ -63,7 +63,7 @@
         {
             if (Event.Value == null) return;
             Engine.Matcher.MatchTable[Index] = new(Engine.Matcher.MatchTable[Index].Key, new Regex((string)Event.Value));
-            Engine.Tikhole.Configurator?.SaveConfig();
+            Engine.Configurator.SaveConfig();
             Error = "";
         }
         catch (Exception e)
@@ -74,7 +74,7 @@
     private void RemoveRule(int Index)
     {
         Engine.Matcher.MatchTable.RemoveAt(Index);
-        Engine.Tikhole.Configurator?.SaveConfig();
+        Engine.Configurator.SaveConfig();
     }
     private void MoveRuleUp(int Index)
     {
@@ -82,7 +82,7 @@
         KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTable[Index];
         Engine.Matcher.MatchTable.RemoveAt(Index);
         Engine.Matcher.MatchTable.Insert(Index - 1, rule);
-        Engine.Tikhole.Configurator?.SaveConfig();
+        Engine.Configurator.SaveConfig();
     }
     private void MoveRuleDown(int Index)
     {
@@ -90,6 +90,6 @@
         KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTable[Index];
         Engine.Matcher.MatchTable.RemoveAt(Index);
         Engine.Matcher.MatchTable.Insert(Index + 1, rule);
-        Engine.Tikhole.Configurator?.SaveConfig();
+        Engine.Configurator.SaveConfig();
     }
 }

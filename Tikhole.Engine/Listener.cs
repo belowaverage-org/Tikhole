@@ -5,9 +5,9 @@ namespace Tikhole.Engine
 {
     public class Listener
     {
-        public static UdpClient Client = new();
         public static IPEndPoint IPEndPoint = new(IPAddress.Any, 53);
         public static uint Requests = 0;
+        public UdpClient Client = new();
         public event EventHandler<RecievedRequestDataEventArgs>? RecievedRequestData;
         public Listener()
         {
