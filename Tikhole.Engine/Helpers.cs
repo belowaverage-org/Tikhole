@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml;
@@ -79,18 +80,50 @@ namespace Tikhole.Engine
         }
         public static string[] SendSentence(this TcpClient Client, string[] Words)
         {
-            int index = 0;
-            int sentenceLength = 0;
-            foreach (string word in Words) sentenceLength += word.Length + 1;
-            byte[] sentenceBytes = new byte[sentenceLength + 1];
-            foreach (string word in Words)
-            {
-                sentenceBytes[index++] = (byte)word.Length;
-                Encoding.ASCII.GetBytes(word).CopyTo(sentenceBytes, index);
-                index += word.Length;
-            }
-            Client.Client.Send(sentenceBytes);
+            List<byte> sentenceBytes = new();
+            foreach (string word in Words) sentenceBytes.AddWord(word);
+            sentenceBytes.AddWord(string.Empty);
+            Client.Client.Send(sentenceBytes.ToArray());
             return Client.ReadSentence();
+        }
+        private static void AddWord(this List<byte> SentenceBytes, string Word)
+        {
+            byte[] wordBytes = Encoding.ASCII.GetBytes(Word);
+            if (wordBytes.Length <= 0x7f)
+            {
+                SentenceBytes.Add((byte)wordBytes.Length);
+            }
+            else if (wordBytes.Length <= 0x3fff)
+            {
+                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
+                SentenceBytes.Add((byte)(wLength[1] | 0x8));
+                SentenceBytes.Add(wLength[0]);
+            }
+            else if (wordBytes.Length <= 0x1fffff)
+            {
+                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
+                SentenceBytes.Add((byte)(wLength[2] | 0xc));
+                SentenceBytes.Add(wLength[1]);
+                SentenceBytes.Add(wLength[0]);
+            }
+            else if (wordBytes.Length <= 0xfffffff)
+            {
+                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
+                SentenceBytes.Add((byte)(wLength[3] | 0xe));
+                SentenceBytes.Add(wLength[2]);
+                SentenceBytes.Add(wLength[1]);
+                SentenceBytes.Add(wLength[0]);
+            }
+            else
+            {
+                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
+                SentenceBytes.Add((byte)(wLength[4] | 0xf));
+                SentenceBytes.Add(wLength[3]);
+                SentenceBytes.Add(wLength[2]);
+                SentenceBytes.Add(wLength[1]);
+                SentenceBytes.Add(wLength[0]);
+            }
+            SentenceBytes.AddRange(wordBytes);
         }
         private static string[] ReadSentence(this TcpClient Client)
         {

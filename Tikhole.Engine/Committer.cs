@@ -58,8 +58,7 @@ namespace Tikhole.Engine
                 {
                     string v6 = "";
                     string cidr = "";
-                    string comment = "";
-                    //string comment = "Tikhole: " + string.Join(", ", e.MatchedNames);
+                    string comment = "TH: " + string.Join(", ", e.MatchedNames);
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
                         v6 = "v6";
