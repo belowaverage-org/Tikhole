@@ -89,26 +89,24 @@ namespace Tikhole.Engine
         private static void AddWord(this List<byte> SentenceBytes, string Word)
         {
             byte[] wordBytes = Encoding.ASCII.GetBytes(Word);
+            byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
             if (wordBytes.Length <= 0x7f)
             {
-                SentenceBytes.Add((byte)wordBytes.Length);
+                SentenceBytes.Add(wLength[0]);
             }
             else if (wordBytes.Length <= 0x3fff)
             {
-                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
                 SentenceBytes.Add((byte)(wLength[1] | 0x8));
                 SentenceBytes.Add(wLength[0]);
             }
             else if (wordBytes.Length <= 0x1fffff)
             {
-                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
                 SentenceBytes.Add((byte)(wLength[2] | 0xc));
                 SentenceBytes.Add(wLength[1]);
                 SentenceBytes.Add(wLength[0]);
             }
             else if (wordBytes.Length <= 0xfffffff)
             {
-                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
                 SentenceBytes.Add((byte)(wLength[3] | 0xe));
                 SentenceBytes.Add(wLength[2]);
                 SentenceBytes.Add(wLength[1]);
@@ -116,7 +114,6 @@ namespace Tikhole.Engine
             }
             else
             {
-                byte[] wLength = BitConverter.GetBytes((uint)wordBytes.Length);
                 SentenceBytes.Add((byte)(wLength[4] | 0xf));
                 SentenceBytes.Add(wLength[3]);
                 SentenceBytes.Add(wLength[2]);
