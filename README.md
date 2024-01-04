@@ -43,3 +43,24 @@ Before you embark on your cosmic journey with Tikhole, ensure you have the follo
 
 3. **Explore DNS Filtering:**
     Open your web browser and witness the magic at [http://localhost:8080](http://localhost:8080).
+
+4. **Configure Tikhole through the Web Interface:**
+    - Login to the web interface at [http://localhost:8080](http://localhost:8080).
+    - Use your MikroTik router login credentials since Tikhole validates them over the MikroTik API.
+    - Ensure your MikroTik router has the API enabled.
+    - If your MikroTik router is configured with the default IP of `192.168.200.1` and the default API port, no configuration change will be nessesary. Otherwise, edit the Tikhole config file manually at `/Tikhole.Website/config/Tikhole.xml`.
+  
+5. **Editing Tikhole Configuration Manually:**
+    - After running Tikhole once, the configuration file (`Tikhole.xml`) will auto-generate.
+    - Edit the file with your specific MikroTik router details and configurations.
+    - Restart Tikhole for the changes to take effect.
+  
+6. **Editing Tikhole Configuration Manually:**
+    - After running Tikhole once, the configuration file (`Tikhole.xml`) will auto-generate.
+    - Edit the file with your specific MikroTik router details and configurations.
+    - Restart Tikhole for the changes to take effect.
+  
+7. **Set MikroTik API IP, Port, Username, and Password:**
+    - Browse to the Settings page on the web interface.
+    - Configure the MikroTik router API ip, port, username, and password.
+    - It is advisable to create a dedicated user on the router with full API permissions enabled for security.
