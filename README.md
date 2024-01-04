@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/belowaverage-org/Tikhole/master/Tikhole.Website/wwwroot/logo.svg" />
+  <img src="https://raw.githubusercontent.com/belowaverage-org/Tikhole/master/assets/logo.svg" />
 </p>
 <hr />
 
@@ -59,3 +59,10 @@ Before you embark on your cosmic journey with Tikhole, ensure you have the follo
     - Browse to the Settings page on the web interface.
     - Configure the MikroTik router API ip, port, username, and password.
     - It is advisable to create a dedicated user on the router with full API permissions enabled for security.
+  
+<hr />
+
+<img src="https://raw.githubusercontent.com/belowaverage-org/Tikhole/master/assets/dashboard.svg" />
+<img src="https://raw.githubusercontent.com/belowaverage-org/Tikhole/master/assets/rules.svg" />
+<img src="https://raw.githubusercontent.com/belowaverage-org/Tikhole/master/assets/settings.svg" />
+<img src="https://raw.githubusercontent.com/belowaverage-org/Tikhole/master/assets/logs.svg" />
