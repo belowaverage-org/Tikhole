@@ -54,13 +54,8 @@ Before you embark on your cosmic journey with Tikhole, ensure you have the follo
     - After running Tikhole once, the configuration file (`Tikhole.xml`) will auto-generate.
     - Edit the file with your specific MikroTik router details and configurations.
     - Restart Tikhole for the changes to take effect.
-  
-6. **Editing Tikhole Configuration Manually:**
-    - After running Tikhole once, the configuration file (`Tikhole.xml`) will auto-generate.
-    - Edit the file with your specific MikroTik router details and configurations.
-    - Restart Tikhole for the changes to take effect.
-  
-7. **Set MikroTik API IP, Port, Username, and Password:**
+
+6. **Set MikroTik API IP, Port, Username, and Password:**
     - Browse to the Settings page on the web interface.
     - Configure the MikroTik router API ip, port, username, and password.
     - It is advisable to create a dedicated user on the router with full API permissions enabled for security.
