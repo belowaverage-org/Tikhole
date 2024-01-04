@@ -100,3 +100,15 @@ small {
         overflow-y: auto;
     }
 }
+
+.logo {
+    overflow: hidden;
+    margin-top: -0.5rem;
+    height: calc(100% + 1rem);
+}
+
+    .logo img {
+        filter: invert();
+        height: 128px;
+        margin-top: -36px;
+    }
