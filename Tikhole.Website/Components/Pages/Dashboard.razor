@@ -50,7 +50,7 @@
                     </thead>
                     <tbody>
                         @{Semaphore.Wait();}
-                        @foreach (DNSPacket packet in DNSPackets)
+                        @foreach (DNSPacket packet in DNSPackets.Reverse())
                         {
                             List<string> IPAddresses = new();
                             foreach (DNSResourceRecord record in packet.Answers)
@@ -75,7 +75,7 @@
 </div>
 
 @code {
-    private static uint RequestQueueMax = 20;
+    private static uint RequestQueueMax = 100;
     private Queue<DNSPacket> DNSPackets = new();
     private SemaphoreSlim Semaphore = new(1, 1);
     protected override void OnInitialized()
