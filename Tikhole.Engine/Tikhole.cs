@@ -2,13 +2,14 @@
 
 namespace Tikhole.Engine
 {
-    public class Tikhole
+    public class Tikhole : IDisposable
     {
         public static Assembly Assembly = Assembly.GetExecutingAssembly();
         public static Listener? Listener;
         public static Forwarder? Forwarder;
         public static Parser? Parser;
         public static Matcher? Matcher;
+        public static Committer[]? Committers;
         public static void Main()
         {
             new Tikhole();
@@ -25,8 +26,14 @@ namespace Tikhole.Engine
             Parser = new Parser();
             Matcher = new Matcher();
             Committer.TotalInstances = 0;
-            for (int i = 0; i < Committer.NeededInstances; i++) new Committer();
+            Committers = new Committer[Committer.NeededInstances];
+            for (int i = 0; i < Committer.NeededInstances; i++) Committers[i] = new Committer();
             new Responder();
+        }
+        public void Dispose()
+        {
+            Listener?.Dispose();
+            if (Committers != null) foreach (Committer c in Committers) c.Dispose();
         }
     }
 }

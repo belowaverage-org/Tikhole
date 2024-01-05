@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace Tikhole.Engine
 {
-    public class Committer
+    public class Committer : IDisposable
     {
         public static string ListTTL = "24h";
         public static string UserName = "Tikhole";
@@ -111,6 +111,12 @@ namespace Tikhole.Engine
                     Thread.Sleep((int)ComitterDelayMS);
                 }
             }
+        }
+        public void Dispose()
+        {
+            if (TcpClient.Connected) TcpClient.Close();
+            TcpClient.Dispose();
+            Semaphore.Dispose();
         }
     }
 }

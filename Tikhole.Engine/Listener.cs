@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace Tikhole.Engine
 {
-    public class Listener
+    public class Listener : IDisposable
     {
         public static IPEndPoint IPEndPoint = new(IPAddress.Any, 53);
         public static uint Requests = 0;
@@ -41,6 +41,10 @@ namespace Tikhole.Engine
             {
                 Logger.Error("Could not start listener on " + IPEndPoint.ToString() + ".");
             }
+        }
+        public void Dispose()
+        {
+            Client.Dispose();
         }
     }
     public class RecievedRequestDataEventArgs : EventArgs
