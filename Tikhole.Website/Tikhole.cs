@@ -5,10 +5,9 @@ namespace Tikhole.Website
     public class Tikhole
     {
         public static WebApplication? WebApplication;
-        public static Engine.Tikhole? Engine;
+        public static Engine.Tikhole Engine = new();
         public static void Main(string[] args)
         {
-            _ = Task.Run(() => Engine = new Engine.Tikhole());
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddRazorComponents().AddInteractiveServerComponents();
             WebApplication = builder.Build();
@@ -20,12 +19,12 @@ namespace Tikhole.Website
         }
         public static void StopTikhole()
         {
-            Engine?.Dispose();   
+            Engine.Dispose();   
         }
         public static void RestartTikhole()
         {
             StopTikhole();
-            _ = Task.Run(() => Engine = new Engine.Tikhole());
+            Engine = new Engine.Tikhole();
         }
     }
 }
