@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using System.Net
+@using global::Tikhole.Engine
 
 <PageTitle>🚦 Dashboard</PageTitle>
 
@@ -7,7 +9,7 @@
     <small>Real-time counters and events.</small>
 </p>
 <hr />
-<div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
     <div class="col">
         <div class="card h-100">
             <div class="card-header">🗣️ <b>Requests</b></div>
@@ -32,18 +34,67 @@
             </div>
         </div>
     </div>
-    
+</div>
+<div class="row row-cols-1 row-cols-md-1 g-4 mb-3">
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">🔬 <b>Last @RequestQueueMax Requests</b></div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Question</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{Semaphore.Wait();}
+                        @foreach (DNSPacket packet in DNSPackets)
+                        {
+                            List<string> IPAddresses = new();
+                            foreach (DNSResourceRecord record in packet.Answers)
+                            {
+                                foreach (IPAddress address in record.ToAddresses())
+                                {
+                                    IPAddresses.Add(address.ToString());
+                                }
+                            }
+                            <tr>
+                                <td scope="row">@packet.Questions[0].Name</td>
+                                <td>@packet.Questions[0].Type</td>
+                                <td>@string.Join(", ", IPAddresses)</td>
+                            </tr>
+                        }
+                        @{Semaphore.Release();}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
+    private static uint RequestQueueMax = 20;
+    private Queue<DNSPacket> DNSPackets = new();
+    private SemaphoreSlim Semaphore = new(1, 1);
     protected override void OnInitialized()
     {
         base.OnInitialized();
         if (Engine.Tikhole.Listener != null) Engine.Tikhole.Listener.RecievedRequestData += InvokeStateChange;
         if (Engine.Tikhole.Matcher != null) Engine.Tikhole.Matcher.MatchesMatchedAndOrCommitted += InvokeStateChange;
+        if (Engine.Tikhole.Parser != null) Engine.Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
     }
-    private void InvokeStateChange(object? sender, EventArgs e)
+    private void InvokeStateChange(object? sender = null, EventArgs? e = null)
     {
         InvokeAsync(() => StateHasChanged());
+    }
+    private void Parser_ParsedResponseData(object? sender, Engine.ParsedResponseDataEventArgs e)
+    {
+        Semaphore.Wait();
+        if (DNSPackets.Count > RequestQueueMax) _ = DNSPackets.Dequeue();
+        DNSPackets.Enqueue(e.DNSPacket);
+        Semaphore.Release();
+        InvokeStateChange();
     }
 }
