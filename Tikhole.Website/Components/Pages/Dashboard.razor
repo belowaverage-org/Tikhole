@@ -91,10 +91,13 @@
     }
     private void Parser_ParsedResponseData(object? sender, Engine.ParsedResponseDataEventArgs e)
     {
-        Semaphore.Wait();
-        if (DNSPackets.Count > RequestQueueMax) _ = DNSPackets.Dequeue();
-        DNSPackets.Enqueue(e.DNSPacket);
-        Semaphore.Release();
-        InvokeStateChange();
+        _ = Task.Run(() =>
+        {
+            Semaphore.Wait();
+            if (DNSPackets.Count > RequestQueueMax) _ = DNSPackets.Dequeue();
+            DNSPackets.Enqueue(e.DNSPacket);
+            Semaphore.Release();
+            InvokeStateChange();
+        });
     }
 }
