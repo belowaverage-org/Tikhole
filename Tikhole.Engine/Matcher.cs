@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Tikhole.Engine
@@ -84,6 +85,7 @@ namespace Tikhole.Engine
     }
     public class MatchTableRegex : List<KeyValuePair<string, Regex>> { }
     public class Rules : List<Rule> { }
+    [DisplayName("Host File")]
     public class RuleHashSetDownloadableHostFile : RuleHashSetDownloadable
     {
         public RuleHashSetDownloadableHostFile(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name, Uri, UpdateTimer) { }
@@ -142,6 +144,7 @@ namespace Tikhole.Engine
             UpdateTimer.Dispose();
         }
     }
+    [DisplayName("Regular Expression")]
     public class RuleRegex : Rule
     {
         public Regex Regex;

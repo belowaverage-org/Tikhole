@@ -1,5 +1,5 @@
 ﻿@page "/Rules"
-@using System.Text.RegularExpressions
+@using global::Tikhole.Engine
 
 <PageTitle>📃 Rules</PageTitle>
 
@@ -17,79 +17,31 @@
 
 <h1>📃 Rules</h1>
 <p class="text-secondary">
-    <small>A list of IP List Names and their corresponding regular expression. Changes made here are in real-time.</small>
+    <small>A list of rules that Tikhole uses to identify domains to send to RouterOS IP lists.</small>
 </p>
 <hr />
-<button class="btn btn-dark float-end mb-3" @onclick="() => Engine.Matcher.MatchTableRegex.Add(new())">➕ Add</button>
+<button class="btn btn-dark float-end mb-3" @onclick="() => { }">➕ Add</button>
+
 @{
-    int index = 0;
+    int index = 0; 
 }
-@foreach (KeyValuePair<string, Regex> rule in Engine.Matcher.MatchTableRegex)
-{
-    string? key = rule.Key;
-    string? value = rule.Value?.ToString();
-    int thisIndex = index;
-    <div class="input-group mb-3">
-        <span class="input-group-text">List</span>
-        <InputText @bind-Value="key" @oninput="(e) => SetRuleName(thisIndex, e)" class="form-control" />
-        <span class="input-group-text">Regex</span>
-        <InputText @bind-Value="value" @oninput="(e) => SetRuleRegex(thisIndex, e)" class="form-control" />
-        <button class="btn btn-outline-secondary" @onclick="() => MoveRuleUp(thisIndex)">⬆️</button>
-        <button class="btn btn-outline-secondary" @onclick="() => MoveRuleDown(thisIndex)">⬇️</button>
-        <button class="btn btn-outline-secondary" @onclick="() => RemoveRule(thisIndex)">❌</button>
+@foreach (Engine.Rule rule in Engine.Matcher.Rules) {
+    <div class="input-group mb-3 flex-row">
+        <span class="input-group-text"><strong>Name</strong></span>
+        <span class="input-group-text">@rule.Name</span>
+        <span class="input-group-text"><strong>Type</strong></span>
+        <span class="input-group-text flex-grow-1">@rule.GetType().GetDisplayName()</span>
+        <button class="btn btn-outline-secondary" @onclick="() => {}">⬆️</button>
+        <button class="btn btn-outline-secondary" @onclick="() => {}">⬇️</button>
+        <a href="/Rules/@index" class="btn btn-outline-secondary">✏️</a>
     </div>
     index++;
 }
 
 @code {
     private string Error { get; set; } = "";
-    private void SetRuleName(int Index, ChangeEventArgs Event)
+    protected override void OnInitialized()
     {
-        try
-        {
-            if (Event.Value == null) return;
-            Engine.Matcher.MatchTableRegex[Index] = new((string)Event.Value, Engine.Matcher.MatchTableRegex[Index].Value);
-            Engine.Configurator.SaveConfig();
-            Error = "";
-        }
-        catch (Exception e)
-        {
-            Error = e.Message;
-        }
-    }
-    private void SetRuleRegex(int Index, ChangeEventArgs Event)
-    {
-        try
-        {
-            if (Event.Value == null) return;
-            Engine.Matcher.MatchTableRegex[Index] = new(Engine.Matcher.MatchTableRegex[Index].Key, new Regex((string)Event.Value));
-            Engine.Configurator.SaveConfig();
-            Error = "";
-        }
-        catch (Exception e)
-        {
-            Error = e.Message;
-        }
-    }
-    private void RemoveRule(int Index)
-    {
-        Engine.Matcher.MatchTableRegex.RemoveAt(Index);
-        Engine.Configurator.SaveConfig();
-    }
-    private void MoveRuleUp(int Index)
-    {
-        if (Index == 0) return;
-        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTableRegex[Index];
-        Engine.Matcher.MatchTableRegex.RemoveAt(Index);
-        Engine.Matcher.MatchTableRegex.Insert(Index - 1, rule);
-        Engine.Configurator.SaveConfig();
-    }
-    private void MoveRuleDown(int Index)
-    {
-        if (Index == Engine.Matcher.MatchTableRegex.Count - 1) return;
-        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTableRegex[Index];
-        Engine.Matcher.MatchTableRegex.RemoveAt(Index);
-        Engine.Matcher.MatchTableRegex.Insert(Index + 1, rule);
-        Engine.Configurator.SaveConfig();
+        base.OnInitialized();
     }
 }

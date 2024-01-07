@@ -6,11 +6,6 @@ namespace Tikhole.Engine
     {
         public static string ConfigFilePath = "./config/";
         public static string ConfigFileName = ConfigFilePath + "Tikhole.xml";
-        private static Dictionary<string, Type> RuleTypes = new()
-        {
-            { "Regex", typeof(RuleRegex) },
-            { "HostFile", typeof(RuleHashSetDownloadableHostFile) }
-        };
         public static void LoadConfig()
         {
             try

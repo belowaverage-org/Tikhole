@@ -1,0 +1,39 @@
+﻿@using System.Text.RegularExpressions
+
+<div class="mb-3">
+    <label class="form-label">Host File URL</label>
+    <InputText @bind-Value="Uri" class="form-control" />
+</div>
+<div class="mb-3">
+    <label class="form-label">Re-download Interval</label>
+    <InputText @bind-Value="Interval" class="form-control" />
+</div>
+
+@code {
+    [Parameter]
+    public required Engine.Rule Rule { get; set; }
+    private string Uri
+    {
+        get
+        {
+            return ((Engine.RuleHashSetDownloadableHostFile)Rule).Uri.ToString();
+        }
+        set
+        {
+            ((Engine.RuleHashSetDownloadableHostFile)Rule).Uri = new Uri(value);
+        }
+    }
+    private string Interval
+    {
+        get
+        {
+            return ((Engine.RuleHashSetDownloadableHostFile)Rule).UpdateTimer.Interval.ToString();
+        }
+        set
+        {
+            ((Engine.RuleHashSetDownloadableHostFile)Rule).UpdateTimer.Interval = double.Parse(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<Engine.Rule> RuleChanged { get; set; }
+}

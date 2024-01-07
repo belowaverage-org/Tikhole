@@ -1,0 +1,52 @@
+﻿@page "/Rules/{Index:int}"
+@using global::Tikhole.Engine
+
+<PageTitle>📃 Rule: @ERule?.Name</PageTitle>
+
+    @if (Error != "")
+{
+    <div class="toast show position-fixed bottom-0 end-0 m-3">
+        <div class="toast-header">
+            <strong class="me-auto">⚠️ Error</strong>
+        </div>
+        <div class="toast-body">
+            @Error
+        </div>
+    </div>
+}
+
+<h1>📃 Rule: @ERule?.Name</h1>
+<p class="text-secondary">
+    <small>@ERule?.GetType().GetDisplayName()</small>
+</p>
+<hr />
+<a href="/Rules" class="btn btn-dark mb-3" @onclick="() => { }">⬅️ Back</a>
+<hr />
+
+<div style="max-width:500px;">
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <InputText @bind-Value="ERule.Name" class="form-control" />
+    </div>
+    @if (ERule?.GetType() == typeof(Engine.RuleRegex))
+    {
+        <RuleRegex @bind-Rule="ERule" />
+    }
+    @if (ERule?.GetType() == typeof(Engine.RuleHashSetDownloadableHostFile))
+    {
+        <RuleHashSetDownloadableHostFile @bind-Rule="ERule" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Index { get; set; }
+    private string Error { get; set; } = "";
+    private Engine.Rule? ERule;
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (Engine.Matcher.Rules[Index] != null) ERule = Engine.Matcher.Rules[Index];
+
+    }
+}

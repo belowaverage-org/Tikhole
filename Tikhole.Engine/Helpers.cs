@@ -1,5 +1,7 @@
-﻿using System.Net;
+﻿using System.ComponentModel;
+using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 
@@ -236,6 +238,12 @@ namespace Tikhole.Engine
                     new(double.Parse(Node.Attributes!["UpdateIntervalMS"]!.InnerText))
                 )
             );
+        }
+        public static string GetDisplayName(this Type Type)
+        {
+            DisplayNameAttribute? attribute = Type.GetCustomAttribute<DisplayNameAttribute>();
+            if (attribute == null) return "Unknown";
+            return attribute.DisplayName;
         }
     }
 }
