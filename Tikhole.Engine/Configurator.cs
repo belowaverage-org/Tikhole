@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using System.Xml;
+﻿using System.Xml;
 
 namespace Tikhole.Engine
 {
@@ -7,6 +6,11 @@ namespace Tikhole.Engine
     {
         public static string ConfigFilePath = "./config/";
         public static string ConfigFileName = ConfigFilePath + "Tikhole.xml";
+        private static Dictionary<string, Type> RuleTypes = new()
+        {
+            { "Regex", typeof(RuleRegex) },
+            { "HostFile", typeof(RuleHashSetDownloadableHostFile) }
+        };
         public static void LoadConfig()
         {
             try
@@ -24,14 +28,7 @@ namespace Tikhole.Engine
                 config.ReadSetting("/Tikhole/Forwarder/DnsEndpoint", ref Forwarder.DNSServer);
                 config.ReadSetting("/Tikhole/Responder/WaitForMatcherAndCommitter", ref Responder.WaitForMatcherAndCommitter);
                 config.ReadSetting("/Tikhole/Logger/VerboseMode", ref Logger.VerboseMode);
-                XmlNode? rulesNode = config.SelectSingleNode("/Tikhole/Matcher/Rules");
-                XmlNodeList? xRules = config.SelectNodes("/Tikhole/Matcher/Rules/*");
-                if (xRules != null && rulesNode != null)
-                {
-                    MatchTable table = new();
-                    foreach (XmlNode xRule in xRules) table.Add(new(xRule.Name, new Regex(xRule.InnerText)));
-                    Matcher.MatchTable = table;
-                }
+                config.ReadRules("/Tikhole/Matcher/Rules/*", ref Matcher.Rules);
                 Logger.Success("Config " + ConfigFileName + " read.");
             }
             catch
@@ -60,12 +57,7 @@ namespace Tikhole.Engine
                 XmlNode? logger = root?.AppendChild(config.CreateElement("Logger"));
                 logger?.AddSetting("VerboseMode", Logger.VerboseMode.ToString());
                 XmlNode? rules = root?.AppendChild(config.CreateElement("Matcher"))?.AppendChild(config.CreateElement("Rules"));
-                foreach (KeyValuePair<string, Regex> rule in Matcher.MatchTable)
-                {
-                    if (rule.Key == null || rule.Key == string.Empty) continue;
-                    XmlNode? node = rules?.AppendChild(config.CreateElement(rule.Key));
-                    if (node != null && rule.Value != null) node.InnerText = rule.Value.ToString();
-                }
+                rules?.AddRules(Matcher.Rules);
                 if (!Directory.Exists(ConfigFilePath)) _ = Directory.CreateDirectory(ConfigFilePath);
                 config.Save(ConfigFileName);
                 Logger.Success("Config saved to " + ConfigFileName + ".");

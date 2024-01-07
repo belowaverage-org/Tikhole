@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml;
@@ -36,7 +35,7 @@ namespace Tikhole.Engine
                 int lLength = Bytes[Index];
                 if ((Bytes[Index] & 0b11000000) == 0b11000000)
                 {
-                    byte[] pBytes = 
+                    byte[] pBytes =
                     [
                         (byte)(Bytes[Index] & 0b00111111),
                         Bytes[Index + 1]
@@ -147,6 +146,33 @@ namespace Tikhole.Engine
             child.InnerText = InnerText;
             Parent.AppendChild(child);
         }
+        public static void AddRules(this XmlNode Parent, Rules Rules)
+        {
+            if (Parent.OwnerDocument == null) return;
+            foreach (Rule rule in Rules) Parent.AddRule(rule);
+        }
+        private static void AddRule(this XmlNode Parent, Rule Rule)
+        {
+            XmlNode xRule = Parent.OwnerDocument!.CreateElement(Rule.Name);
+            XmlAttribute xType = Parent.OwnerDocument!.CreateAttribute("Type");
+            xType.Value = Rule.GetType().Name;
+            xRule.Attributes?.Append(xType);
+            if (Rule.GetType() == typeof(RuleRegex)) Parent.AddRuleRegex(xRule, (RuleRegex)Rule);
+            if (Rule.GetType() == typeof(RuleHashSetDownloadableHostFile)) Parent.AddRuleHostFile(xRule, (RuleHashSetDownloadableHostFile)Rule);
+        }
+        private static void AddRuleRegex(this XmlNode Parent, XmlNode XRule, RuleRegex Rule)
+        {
+            XRule.InnerText = Rule.Regex.ToString();
+            Parent.AppendChild(XRule);
+        }
+        private static void AddRuleHostFile(this XmlNode Parent, XmlNode XRule, RuleHashSetDownloadableHostFile Rule)
+        {
+            XmlAttribute xUpdateIntervalMS = Parent.OwnerDocument!.CreateAttribute("UpdateIntervalMS");
+            xUpdateIntervalMS.InnerText = Rule.UpdateTimer.Interval.ToString();
+            XRule.Attributes?.Append(xUpdateIntervalMS);
+            XRule.InnerText = Rule.Uri.ToString();
+            Parent.AppendChild(XRule);
+        }
         public static void ReadSetting(this XmlNode Parent, string XPath, ref string Value)
         {
             XmlNode? node = Parent.SelectSingleNode(XPath);
@@ -170,6 +196,46 @@ namespace Tikhole.Engine
         {
             XmlNode? node = Parent.SelectSingleNode(XPath);
             if (node != null) uint.TryParse(node.InnerText, out Value);
+        }
+        public static void ReadRules(this XmlNode Parent, string XPath, ref Rules Rules)
+        {
+            XmlNodeList? xRules = Parent.SelectNodes(XPath);
+            if (xRules == null) return;
+            Rules.Clear();
+            foreach (XmlNode xRule in xRules)
+            {
+                if (xRule.Attributes == null || xRule.Attributes["Type"] == null) continue;
+                Type? type = Type.GetType("Tikhole.Engine." + xRule.Attributes["Type"]!.InnerText);
+                if (type == null) continue;
+                try
+                {
+                    if (type == typeof(RuleRegex)) Rules.AddRuleRegex(xRule);
+                    if (type == typeof(RuleHashSetDownloadableHostFile)) Rules.AddRuleHostFile(xRule);
+                }
+                catch (Exception e)
+                {
+                    Logger.Warning("Invalid rule: " + xRule.Name + ": " + e.Message);
+                }
+            }
+        }
+        private static void AddRuleRegex(this Rules Rules, XmlNode Node)
+        {
+            Rules.Add(
+                new RuleRegex(
+                    Node.Name,
+                    new(Node.InnerText)
+                )
+            );
+        }
+        private static void AddRuleHostFile(this Rules Rules, XmlNode Node)
+        {
+            Rules.Add(
+                new RuleHashSetDownloadableHostFile(
+                    Node.Name,
+                    new(Node.InnerText),
+                    new(double.Parse(Node.Attributes!["UpdateIntervalMS"]!.InnerText))
+                )
+            );
         }
     }
 }

@@ -20,11 +20,11 @@
     <small>A list of IP List Names and their corresponding regular expression. Changes made here are in real-time.</small>
 </p>
 <hr />
-<button class="btn btn-dark float-end mb-3" @onclick="() => Engine.Matcher.MatchTable.Add(new())">➕ Add</button>
+<button class="btn btn-dark float-end mb-3" @onclick="() => Engine.Matcher.MatchTableRegex.Add(new())">➕ Add</button>
 @{
     int index = 0;
 }
-@foreach (KeyValuePair<string, Regex> rule in Engine.Matcher.MatchTable)
+@foreach (KeyValuePair<string, Regex> rule in Engine.Matcher.MatchTableRegex)
 {
     string? key = rule.Key;
     string? value = rule.Value?.ToString();
@@ -48,7 +48,7 @@
         try
         {
             if (Event.Value == null) return;
-            Engine.Matcher.MatchTable[Index] = new((string)Event.Value, Engine.Matcher.MatchTable[Index].Value);
+            Engine.Matcher.MatchTableRegex[Index] = new((string)Event.Value, Engine.Matcher.MatchTableRegex[Index].Value);
             Engine.Configurator.SaveConfig();
             Error = "";
         }
@@ -62,7 +62,7 @@
         try
         {
             if (Event.Value == null) return;
-            Engine.Matcher.MatchTable[Index] = new(Engine.Matcher.MatchTable[Index].Key, new Regex((string)Event.Value));
+            Engine.Matcher.MatchTableRegex[Index] = new(Engine.Matcher.MatchTableRegex[Index].Key, new Regex((string)Event.Value));
             Engine.Configurator.SaveConfig();
             Error = "";
         }
@@ -73,23 +73,23 @@
     }
     private void RemoveRule(int Index)
     {
-        Engine.Matcher.MatchTable.RemoveAt(Index);
+        Engine.Matcher.MatchTableRegex.RemoveAt(Index);
         Engine.Configurator.SaveConfig();
     }
     private void MoveRuleUp(int Index)
     {
         if (Index == 0) return;
-        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTable[Index];
-        Engine.Matcher.MatchTable.RemoveAt(Index);
-        Engine.Matcher.MatchTable.Insert(Index - 1, rule);
+        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTableRegex[Index];
+        Engine.Matcher.MatchTableRegex.RemoveAt(Index);
+        Engine.Matcher.MatchTableRegex.Insert(Index - 1, rule);
         Engine.Configurator.SaveConfig();
     }
     private void MoveRuleDown(int Index)
     {
-        if (Index == Engine.Matcher.MatchTable.Count - 1) return;
-        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTable[Index];
-        Engine.Matcher.MatchTable.RemoveAt(Index);
-        Engine.Matcher.MatchTable.Insert(Index + 1, rule);
+        if (Index == Engine.Matcher.MatchTableRegex.Count - 1) return;
+        KeyValuePair<string, Regex> rule = Engine.Matcher.MatchTableRegex[Index];
+        Engine.Matcher.MatchTableRegex.RemoveAt(Index);
+        Engine.Matcher.MatchTableRegex.Insert(Index + 1, rule);
         Engine.Configurator.SaveConfig();
     }
 }

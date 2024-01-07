@@ -6,15 +6,7 @@ namespace Tikhole.Engine
     public class Matcher
     {
         public static uint Matches = 0;
-        public static MatchTable MatchTable = new()
-        {
-            new ("Apple", new("^.*\\.?apple\\.com$")),
-            new ("Google", new("^.*\\.?google\\.com$")),
-            new ("Reddit", new ("^.*\\.?reddit\\.com$")),
-            new ("Youtube", new ("^.*\\.?youtube\\.com$")),
-            new ("Microsoft", new("^.*\\.?microsoft\\.com$")),
-            new ("Facebook", new("^.*\\.?facebook\\.com$"))
-        };
+        public static Rules Rules = new();
         public event EventHandler<ResponseMatchedEventArgs>? ResponseMatched;
         public event EventHandler<ParsedResponseDataEventArgs>? MatchesMatchedAndOrCommitted;
         public Matcher()
@@ -36,15 +28,14 @@ namespace Tikhole.Engine
                     foreach (DNSResourceRecord answer in e.DNSPacket.Answers) names.Add(answer.Name);
                     Logger.Verbose("Response parsed as " + string.Join(", ", names) + ", checking for matches...");
                 }
-                foreach (KeyValuePair<string, Regex> matcher in MatchTable)
+                foreach (Rule rule in Rules)
                 {
-                    if (matcher.Key == null || matcher.Key == string.Empty || matcher.Value == null) continue;
                     List<string> matchedNames = new();
                     List<string> aliases = new();
                     List<IPAddress> addresses = new();
                     foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
                     {
-                        if (!matchedNames.Contains(answer.Name) && matcher.Value.IsMatch(answer.Name)) matchedNames.Add(answer.Name);
+                        if (!matchedNames.Contains(answer.Name) && rule.Matches(answer.Name)) matchedNames.Add(answer.Name);
                     }
                     while (true)
                     {
@@ -52,7 +43,7 @@ namespace Tikhole.Engine
                         foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
                         {
                             if (answer.Type != DNSType.CNAME) continue;
-                            if (matcher.Value.IsMatch(answer.Name) || aliases.Contains(answer.Name))
+                            if (rule.Matches(answer.Name) || aliases.Contains(answer.Name))
                             {
                                 int index = answer.DataIndex;
                                 string data = e.RecievedResponseData.Data.ToLabelsString(ref index);
@@ -68,7 +59,7 @@ namespace Tikhole.Engine
                     foreach (DNSResourceRecord answer in e.DNSPacket.Answers)
                     {
                         if (answer.Type != DNSType.A && answer.Type != DNSType.AAAA) continue;
-                        if (matcher.Value.IsMatch(answer.Name) || aliases.Contains(answer.Name))
+                        if (rule.Matches(answer.Name) || aliases.Contains(answer.Name))
                         {
                             addresses.AddRange(answer.ToAddresses());
                         }
@@ -77,7 +68,7 @@ namespace Tikhole.Engine
                     ResponseMatched?.Invoke(null, new()
                     {
                         ParsedResponseData = e,
-                        AddressListName = matcher.Key,
+                        AddressListName = rule.Name,
                         MatchedNames = matchedNames.ToArray(),
                         Aliases = aliases.ToArray(),
                         Addresses = addresses.ToArray()
@@ -91,7 +82,92 @@ namespace Tikhole.Engine
             }
         }
     }
-    public class MatchTable : List<KeyValuePair<string, Regex>> { }
+    public class MatchTableRegex : List<KeyValuePair<string, Regex>> { }
+    public class Rules : List<Rule> { }
+    public class RuleHashSetDownloadableHostFile : RuleHashSetDownloadable
+    {
+        public RuleHashSetDownloadableHostFile(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name, Uri, UpdateTimer) { }
+        private static Regex DomainNameMatcher = new("(?:^[0-9a-fA-F.:]*?\\s+)([a-zA-Z0-9.-]*)(?:$)", RegexOptions.Multiline | RegexOptions.Compiled);
+        public override void UpdateList(object? a = null, object? b = null)
+        {
+            base.UpdateList(a, b);
+            try
+            {
+                Logger.Info("Downloading host file from: " + Uri.ToString() + "...");
+                Task<string> request = HttpClient.GetStringAsync(Uri);
+                request.Wait();
+                Logger.Info("Importing hosts from host file: " + Uri.ToString() + "...");
+                MatchCollection matches = DomainNameMatcher.Matches(request.Result);
+                foreach (Match match in matches)
+                {
+                    if (match.Groups[1] != null)
+                    {
+                        string domain = match.Groups[1].Value;
+                        if (!List.Contains(domain)) List.Add(domain);
+                    }
+                }
+                Logger.Success("List imported from host file: " + Uri.ToString() + ".");
+            }
+            catch
+            {
+                Logger.Warning("Failed to import host file: " + Uri.ToString() + ".");
+            }
+        }
+    }
+    public abstract class RuleHashSetDownloadable : RuleHashSet, IDisposable
+    {
+        public Uri Uri;
+        public System.Timers.Timer UpdateTimer;
+        private protected static HttpClient HttpClient = new();
+        public RuleHashSetDownloadable(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name)
+        {
+            this.Uri = Uri;
+            this.UpdateTimer = UpdateTimer;
+            UpdateTimer.Elapsed += UpdateList;
+            UpdateTimer.Enabled = true;
+            UpdateTimer.Start();
+            UpdateList();
+        }
+        public virtual void UpdateList(object? a = null, object? b = null)
+        {
+            List.Clear();
+        }
+        public override bool Matches(string Hostname)
+        {
+            return List.Contains(Hostname);
+        }
+        public void Dispose()
+        {
+            UpdateTimer.Stop();
+            UpdateTimer.Dispose();
+        }
+    }
+    public class RuleRegex : Rule
+    {
+        public Regex Regex;
+        public RuleRegex(string Name, Regex Regex) : base(Name)
+        {
+            this.Regex = Regex;
+        }
+        public override bool Matches(string Hostname)
+        {
+            return Regex.IsMatch(Hostname);
+        }
+    }
+    public abstract class RuleHashSet : Rule
+    {
+        protected RuleHashSet(string Name) : base(Name) { }
+        public HashSet<string> List = new();
+    }
+    public abstract class Rule
+    {
+        public string Name;
+        public Rule(string Name)
+        {
+            this.Name = Name;
+        }
+        public abstract bool Matches(string Hostname);
+    }
     public class ResponseMatchedEventArgs : EventArgs
     {
         public required ParsedResponseDataEventArgs ParsedResponseData;
