@@ -30,11 +30,13 @@
     </div>
     @if (ERule?.GetType() == typeof(Engine.RuleRegex))
     {
-        <RuleRegex @bind-Rule="ERule" />
+        Engine.RuleRegex rule = (Engine.RuleRegex)ERule;
+        <RuleRegex @bind-Rule="rule" />
     }
     @if (ERule?.GetType() == typeof(Engine.RuleHashSetDownloadableHostFile))
     {
-        <RuleHashSetDownloadableHostFile @bind-Rule="ERule" />
+        Engine.RuleHashSetDownloadableHostFile rule = (Engine.RuleHashSetDownloadableHostFile)ERule;
+        <RuleHashSetDownloadableHostFile @bind-Rule="rule" />
     }
 </div>
 
@@ -47,6 +49,5 @@
     {
         base.OnInitialized();
         if (Engine.Matcher.Rules[Index] != null) ERule = Engine.Matcher.Rules[Index];
-
     }
 }

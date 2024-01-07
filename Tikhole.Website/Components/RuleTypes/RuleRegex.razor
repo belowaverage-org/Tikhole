@@ -7,18 +7,19 @@
 
 @code {
     [Parameter]
-    public required Engine.Rule Rule { get; set; }
+    public required Engine.RuleRegex Rule { get; set; }
+    [Parameter]
+    public EventCallback<Engine.RuleRegex> RuleChanged { get; set; }
     private string Regex
     {
         get
         {
-            return ((Engine.RuleRegex)Rule).Regex.ToString();
+            return Rule.Regex.ToString();
         }
         set
         {
-            ((Engine.RuleRegex)Rule).Regex = new Regex(value);
+            Rule.Regex = new Regex(value);
+            RuleChanged.InvokeAsync();
         }
     }
-    [Parameter]
-    public EventCallback<Engine.Rule> RuleChanged { get; set; }
 }
