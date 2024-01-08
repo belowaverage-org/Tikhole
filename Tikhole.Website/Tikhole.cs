@@ -20,6 +20,7 @@ namespace Tikhole.Website
         public static void StopTikhole()
         {
             Engine.Dispose();   
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive | GCCollectionMode.Forced, true);
         }
         public static void RestartTikhole()
         {

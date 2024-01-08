@@ -1,4 +1,5 @@
 ﻿@page "/Rules/{Index:int}"
+@inject NavigationManager NavigationManager
 @using global::Tikhole.Engine
 
 <PageTitle>📃 Rule: @ERule?.Name</PageTitle>
@@ -20,14 +21,25 @@
     <small>@ERule?.GetType().GetDisplayName()</small>
 </p>
 <hr />
-<a href="/Rules" class="btn btn-dark mb-3" @onclick="() => { }">⬅️ Back</a>
+<a href="/Rules" class="btn btn-dark">⬅️ Back</a>
+@if (DeleteIntent)
+{
+    <button class="btn btn-dark float-end" @onclick="InvokeDelete">⚠️ Confirm?</button>
+}
+else
+{
+    <button class="btn btn-dark float-end" @onclick="InvokeDelete">🗑️ Delete</button>
+}
 <hr />
 
 <div style="max-width:500px;">
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <InputText @bind-Value="ERule.Name" class="form-control" />
-    </div>
+    @if (ERule != null)
+    {
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText @bind-Value="ERule!.Name" class="form-control" />
+        </div>
+    }
     @if (ERule?.GetType() == typeof(Engine.RuleRegex))
     {
         Engine.RuleRegex rule = (Engine.RuleRegex)ERule;
@@ -45,9 +57,26 @@
     public int Index { get; set; }
     private string Error { get; set; } = "";
     private Engine.Rule? ERule;
+    private bool DeleteIntent = false;
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (Engine.Matcher.Rules[Index] != null) ERule = Engine.Matcher.Rules[Index];
+        if (Index < Engine.Matcher.Rules.Count && Index >= 0) ERule = Engine.Matcher.Rules[Index];
+    }
+    private async void InvokeDelete()
+    {
+        if (DeleteIntent == true)
+        {
+            Delete();
+            return;
+        }
+        DeleteIntent = true;
+        await Task.Delay(2000);
+        DeleteIntent = false;
+        StateHasChanged();
+    }
+    private void Delete()
+    {
+        NavigationManager.NavigateTo("/Rules");
     }
 }

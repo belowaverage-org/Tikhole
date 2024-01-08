@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using System.Net
+@using System.Timers
+@using System.Diagnostics
 @using global::Tikhole.Engine
 
 <PageTitle>🚦 Dashboard</PageTitle>
@@ -9,6 +11,32 @@
     <small>Real-time counters and events.</small>
 </p>
 <hr />
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">🏃 <b>CPU</b></div>
+            <div class="card-body text-center">
+                <h1>@CPUUsage %</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">🧠 <b>Memory</b></div>
+            <div class="card-body text-center">
+                <h1>@(Math.Round((float)Process.PrivateMemorySize64 / 1024 / 1024, 1)) MB</h1>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">⏱️ <b>Uptime</b></div>
+            <div class="card-body text-center">
+                <h1>@DateTime.Now.Subtract(Process.StartTime).ToString("dd\\.hh\\:mm\\:ss")</h1>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row row-cols-1 row-cols-md-3 g-4 mb-3">
     <div class="col">
         <div class="card h-100">
@@ -78,12 +106,27 @@
     private static uint RequestQueueMax = 100;
     private Queue<DNSPacket> DNSPackets = new();
     private SemaphoreSlim Semaphore = new(1, 1);
+    private Timer Timer = new(1000);
+    private Process Process = Process.GetCurrentProcess();
+    private TimeSpan CPULast;
+    double CPUUsage = 0;
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        CPULast = Process.TotalProcessorTime;
+        Timer.Elapsed += TimerElapsed;
+        Timer.Enabled = true;
+        Timer.Start();
         if (Engine.Tikhole.Listener != null) Engine.Tikhole.Listener.RecievedRequestData += InvokeStateChange;
         if (Engine.Tikhole.Matcher != null) Engine.Tikhole.Matcher.MatchesMatchedAndOrCommitted += InvokeStateChange;
         if (Engine.Tikhole.Parser != null) Engine.Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
+    }
+    private void TimerElapsed(object? sender = null, EventArgs? e = null)
+    {
+        Process.Refresh();
+        CPUUsage = Math.Round(Process.TotalProcessorTime.Subtract(CPULast).Milliseconds / Timer.Interval * 10, 2);
+        CPULast = Process.TotalProcessorTime;
+        InvokeStateChange();
     }
     private void InvokeStateChange(object? sender = null, EventArgs? e = null)
     {

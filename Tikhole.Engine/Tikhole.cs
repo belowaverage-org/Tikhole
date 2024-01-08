@@ -33,6 +33,7 @@ namespace Tikhole.Engine
         public void Dispose()
         {
             Listener?.Dispose();
+            foreach (Rule rule in Matcher.Rules) rule.Dispose();
             if (Committers != null) foreach (Committer c in Committers) c.Dispose();
         }
     }

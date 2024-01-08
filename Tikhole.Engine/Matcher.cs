@@ -116,7 +116,7 @@ namespace Tikhole.Engine
             }
         }
     }
-    public abstract class RuleHashSetDownloadable : RuleHashSet, IDisposable
+    public abstract class RuleHashSetDownloadable : RuleHashSet
     {
         public Uri Uri;
         public System.Timers.Timer UpdateTimer;
@@ -138,7 +138,7 @@ namespace Tikhole.Engine
         {
             return List.Contains(Hostname);
         }
-        public void Dispose()
+        public override void Dispose()
         {
             UpdateTimer.Stop();
             UpdateTimer.Dispose();
@@ -156,19 +156,21 @@ namespace Tikhole.Engine
         {
             return Regex.IsMatch(Hostname);
         }
+        public override void Dispose() { }
     }
     public abstract class RuleHashSet : Rule
     {
         protected RuleHashSet(string Name) : base(Name) { }
         public HashSet<string> List = new();
     }
-    public abstract class Rule
+    public abstract class Rule : IDisposable
     {
         public string Name;
         public Rule(string Name)
         {
             this.Name = Name;
         }
+        public abstract void Dispose();
         public abstract bool Matches(string Hostname);
     }
     public class ResponseMatchedEventArgs : EventArgs
