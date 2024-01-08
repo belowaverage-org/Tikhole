@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Net;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace Tikhole.Engine
@@ -85,7 +87,7 @@ namespace Tikhole.Engine
     }
     public class MatchTableRegex : List<KeyValuePair<string, Regex>> { }
     public class Rules : List<Rule> { }
-    [DisplayName("Host File")]
+    [Rule("Host File")]
     public class RuleHashSetDownloadableHostFile : RuleHashSetDownloadable
     {
         public RuleHashSetDownloadableHostFile(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name, Uri, UpdateTimer) { }
@@ -118,7 +120,9 @@ namespace Tikhole.Engine
     }
     public abstract class RuleHashSetDownloadable : RuleHashSet
     {
+        [RuleParameter("File Download URL")]
         public Uri Uri;
+        [RuleParameter("Update Timer MS")]
         public System.Timers.Timer UpdateTimer;
         private protected static HttpClient HttpClient = new();
         public RuleHashSetDownloadable(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name)
@@ -144,9 +148,10 @@ namespace Tikhole.Engine
             UpdateTimer.Dispose();
         }
     }
-    [DisplayName("Regular Expression")]
+    [Rule("Regular Expression")]
     public class RuleRegex : Rule
     {
+        [RuleParameter("Regular Expression")]
         public Regex Regex;
         public RuleRegex(string Name, Regex Regex) : base(Name)
         {
@@ -165,6 +170,7 @@ namespace Tikhole.Engine
     }
     public abstract class Rule : IDisposable
     {
+        [RuleParameter("Name")]
         public string Name;
         public Rule(string Name)
         {
@@ -180,5 +186,23 @@ namespace Tikhole.Engine
         public required string[] MatchedNames;
         public required string[] Aliases;
         public required IPAddress[] Addresses;
+    }
+    [AttributeUsage(AttributeTargets.Class)]
+    public class RuleAttribute : Attribute
+    {
+        public string Name;
+        public RuleAttribute(string Name)
+        {
+            this.Name = Name;
+        }
+    }
+    [AttributeUsage(AttributeTargets.Field)]
+    public class RuleParameterAttribute : Attribute
+    {
+        public string Name;
+        public RuleParameterAttribute(string Name)
+        {
+            this.Name = Name;
+        }
     }
 }

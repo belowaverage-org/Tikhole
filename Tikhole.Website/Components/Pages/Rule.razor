@@ -18,37 +18,37 @@
 
 <h1>📃 Rule: @ERule?.Name</h1>
 <p class="text-secondary">
-    <small>@ERule?.GetType().GetDisplayName()</small>
+    <small>@ERule?.GetType().GetRuleName()</small>
 </p>
 <hr />
 <a href="/Rules" class="btn btn-dark">⬅️ Back</a>
-@if (DeleteIntent)
-{
-    <button class="btn btn-dark float-end" @onclick="InvokeDelete">⚠️ Confirm?</button>
-}
-else
-{
-    <button class="btn btn-dark float-end" @onclick="InvokeDelete">🗑️ Delete</button>
-}
-<hr />
-
-<div style="max-width:500px;">
     @if (ERule != null)
+    {
+        @if (DeleteIntent)
+        {
+            <button class="btn btn-dark float-end" @onclick="InvokeDelete">⚠️ Confirm?</button>
+        }
+        else
+        {
+            <button class="btn btn-dark float-end" @onclick="InvokeDelete">🗑️ Delete</button>
+        }
+    }
+<hr />
+<div style="max-width:500px;">
+    @if (ERule == null)
+    {
+        foreach (Type rule in System.Reflection.Assembly.GetAssembly(typeof(Engine.Tikhole)).GetTypes())
+        {
+            var asdf = rule.GetFields();
+            <button class="btn btn-dark" @onclick="() => {}">@rule.GetRuleName()</button>
+        }
+    }
+    else
     {
         <div class="mb-3">
             <label class="form-label">Name</label>
             <InputText @bind-Value="ERule!.Name" class="form-control" />
         </div>
-    }
-    @if (ERule?.GetType() == typeof(Engine.RuleRegex))
-    {
-        Engine.RuleRegex rule = (Engine.RuleRegex)ERule;
-        <RuleRegex @bind-Rule="rule" />
-    }
-    @if (ERule?.GetType() == typeof(Engine.RuleHashSetDownloadableHostFile))
-    {
-        Engine.RuleHashSetDownloadableHostFile rule = (Engine.RuleHashSetDownloadableHostFile)ERule;
-        <RuleHashSetDownloadableHostFile @bind-Rule="rule" />
     }
 </div>
 

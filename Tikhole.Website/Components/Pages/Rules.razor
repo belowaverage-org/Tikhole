@@ -20,7 +20,7 @@
     <small>A list of rules that Tikhole uses to identify domains to send to RouterOS IP lists.</small>
 </p>
 <hr />
-<button class="btn btn-dark" @onclick="() => { }">➕ Add</button>
+<a href="/Rules/-1" class="btn btn-dark">➕ Add</a>
 <hr />
 @{
     int index = 0; 
@@ -30,7 +30,7 @@
         <span class="input-group-text"><strong>Name</strong></span>
         <span class="input-group-text">@rule.Name</span>
         <span class="input-group-text"><strong>Type</strong></span>
-        <span class="input-group-text flex-grow-1">@rule.GetType().GetDisplayName()</span>
+        <span class="input-group-text flex-grow-1">@rule.GetType().GetRuleName()</span>
         <button class="btn btn-outline-secondary" @onclick="() => {}">⬆️</button>
         <button class="btn btn-outline-secondary" @onclick="() => {}">⬇️</button>
         <a href="/Rules/@index" class="btn btn-outline-secondary">✏️</a>

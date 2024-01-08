@@ -239,11 +239,11 @@ namespace Tikhole.Engine
                 )
             );
         }
-        public static string GetDisplayName(this Type Type)
+        public static string GetRuleName(this Type Type)
         {
-            DisplayNameAttribute? attribute = Type.GetCustomAttribute<DisplayNameAttribute>();
+            RuleAttribute? attribute = Type.GetCustomAttribute<RuleAttribute>();
             if (attribute == null) return "Unknown";
-            return attribute.DisplayName;
+            return attribute.Name;
         }
     }
 }

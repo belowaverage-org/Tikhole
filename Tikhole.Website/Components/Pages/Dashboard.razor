@@ -114,14 +114,14 @@
     {
         base.OnInitialized();
         CPULast = Process.TotalProcessorTime;
-        Timer.Elapsed += TimerElapsed;
+        Timer.Elapsed += Timer_Elapsed;
         Timer.Enabled = true;
         Timer.Start();
         if (Engine.Tikhole.Listener != null) Engine.Tikhole.Listener.RecievedRequestData += InvokeStateChange;
         if (Engine.Tikhole.Matcher != null) Engine.Tikhole.Matcher.MatchesMatchedAndOrCommitted += InvokeStateChange;
         if (Engine.Tikhole.Parser != null) Engine.Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
     }
-    private void TimerElapsed(object? sender = null, EventArgs? e = null)
+    private void Timer_Elapsed(object? sender = null, EventArgs? e = null)
     {
         Process.Refresh();
         CPUUsage = Math.Round(Process.TotalProcessorTime.Subtract(CPULast).Milliseconds / Timer.Interval * 10, 2);
