@@ -1,4 +1,5 @@
 ﻿@page "/Rules"
+@using System.Reflection
 @using global::Tikhole.Engine
 
 <PageTitle>📃 Rules</PageTitle>
@@ -26,11 +27,13 @@
     int index = 0; 
 }
 @foreach (Engine.Rule rule in Engine.Matcher.Rules) {
+    RuleAttribute? ra = rule.GetType().GetCustomAttribute<RuleAttribute>();
+    if (ra == null) continue;
     <div class="input-group mb-3 flex-row">
         <span class="input-group-text"><strong>Name</strong></span>
         <span class="input-group-text">@rule.Name</span>
         <span class="input-group-text"><strong>Type</strong></span>
-        <span class="input-group-text flex-grow-1">@rule.GetType().GetRuleName()</span>
+        <span class="input-group-text flex-grow-1">@ra.Name</span>
         <button class="btn btn-outline-secondary" @onclick="() => {}">⬆️</button>
         <button class="btn btn-outline-secondary" @onclick="() => {}">⬇️</button>
         <a href="/Rules/@index" class="btn btn-outline-secondary">✏️</a>

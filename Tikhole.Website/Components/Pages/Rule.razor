@@ -1,8 +1,10 @@
 ﻿@page "/Rules/{Index:int}"
 @inject NavigationManager NavigationManager
+@using System.Reflection
+@using System.Text.RegularExpressions
 @using global::Tikhole.Engine
 
-<PageTitle>📃 Rule: @ERule?.Name</PageTitle>
+<PageTitle>📃 Rule: @EngineRule?.Name</PageTitle>
 
     @if (Error != "")
 {
@@ -16,13 +18,18 @@
     </div>
 }
 
-<h1>📃 Rule: @ERule?.Name</h1>
+<h1>📃 Rule: @EngineRule?.Name</h1>
 <p class="text-secondary">
-    <small>@ERule?.GetType().GetRuleName()</small>
+    @{
+        RuleAttribute? ruleAttribute = EngineRule?.GetType().GetCustomAttribute<RuleAttribute>();
+    }
+    <small>@ruleAttribute?.Name</small><br />
+    <small><i>@ruleAttribute?.Hint</i></small>
 </p>
 <hr />
 <a href="/Rules" class="btn btn-dark">⬅️ Back</a>
-    @if (ERule != null)
+<button class="btn btn-dark">💾 Save</button>
+    @if (EngineRule != null)
     {
         @if (DeleteIntent)
         {
@@ -35,20 +42,45 @@
     }
 <hr />
 <div style="max-width:500px;">
-    @if (ERule == null)
+    @if (EngineRule == null)
     {
-        foreach (Type rule in System.Reflection.Assembly.GetAssembly(typeof(Engine.Tikhole)).GetTypes())
+        foreach (Type rule in EngineAssembly.GetTypes())
         {
-            var asdf = rule.GetFields();
-            <button class="btn btn-dark" @onclick="() => {}">@rule.GetRuleName()</button>
+            RuleAttribute? ra = rule.GetCustomAttribute<RuleAttribute>();
+            if (ra == null) continue;
+            <button class="btn btn-dark" @onclick="() => {}">@ra.Name</button>
         }
     }
     else
     {
-        <div class="mb-3">
-            <label class="form-label">Name</label>
-            <InputText @bind-Value="ERule!.Name" class="form-control" />
-        </div>
+        foreach (FieldInfo field in EngineRule.GetType().GetFields().Reverse())
+        {
+            RuleFieldAttribute? fa = field.GetCustomAttribute<RuleFieldAttribute>();
+            if (fa == null) continue;
+            string? value;
+            if (field.FieldType == typeof(System.Timers.Timer))
+            {
+                value = ((System.Timers.Timer)field.GetValue(EngineRule)!).Interval.ToString();
+            }
+            else
+            {
+                value = field.GetValue(EngineRule)?.ToString();
+            }
+            <div class="mb-3">
+                <label class="form-label">@fa.Name</label>
+                @if (field.FieldType == typeof(Regex))
+                {
+                    <InputTextArea rows="10" @bind-Value="@value" class="form-control" />
+                }
+                else
+                {
+                    <InputText @bind-Value="@value" class="form-control" />
+                }
+                @if (fa.Hint != null) {
+                    <div class="form-text">@fa.Hint</div>
+                }
+            </div>
+        }
     }
 </div>
 
@@ -56,12 +88,13 @@
     [Parameter]
     public int Index { get; set; }
     private string Error { get; set; } = "";
-    private Engine.Rule? ERule;
+    private Engine.Rule? EngineRule;
     private bool DeleteIntent = false;
+    private Assembly EngineAssembly = Assembly.GetAssembly(typeof(Engine.Tikhole))!;
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        if (Index < Engine.Matcher.Rules.Count && Index >= 0) ERule = Engine.Matcher.Rules[Index];
+        if (Index < Engine.Matcher.Rules.Count && Index >= 0) EngineRule = Engine.Matcher.Rules[Index];
     }
     private async void InvokeDelete()
     {

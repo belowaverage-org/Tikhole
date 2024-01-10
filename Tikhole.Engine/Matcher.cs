@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Tikhole.Engine
@@ -87,7 +84,7 @@ namespace Tikhole.Engine
     }
     public class MatchTableRegex : List<KeyValuePair<string, Regex>> { }
     public class Rules : List<Rule> { }
-    [Rule("Host File")]
+    [Rule("Host File", "A file in UNIX hosts file format that Tikhole will use to match domain names against.")]
     public class RuleHashSetDownloadableHostFile : RuleHashSetDownloadable
     {
         public RuleHashSetDownloadableHostFile(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name, Uri, UpdateTimer) { }
@@ -120,9 +117,9 @@ namespace Tikhole.Engine
     }
     public abstract class RuleHashSetDownloadable : RuleHashSet
     {
-        [RuleParameter("File Download URL")]
+        [RuleField("File Download", "The file's URL to download from.")]
         public Uri Uri;
-        [RuleParameter("Update Timer MS")]
+        [RuleField("Update Timer", "The interval in milliseconds in which Tikhole will re-download the file.")]
         public System.Timers.Timer UpdateTimer;
         private protected static HttpClient HttpClient = new();
         public RuleHashSetDownloadable(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name)
@@ -148,10 +145,10 @@ namespace Tikhole.Engine
             UpdateTimer.Dispose();
         }
     }
-    [Rule("Regular Expression")]
+    [Rule("Regular Expression", "Rule based off of a specified regular expression.")]
     public class RuleRegex : Rule
     {
-        [RuleParameter("Regular Expression")]
+        [RuleField("Match", "The regular expression string that Tikhole will use to match domain names.")]
         public Regex Regex;
         public RuleRegex(string Name, Regex Regex) : base(Name)
         {
@@ -170,7 +167,7 @@ namespace Tikhole.Engine
     }
     public abstract class Rule : IDisposable
     {
-        [RuleParameter("Name")]
+        [RuleField("Name", "The name of rule and IP list.")]
         public string Name;
         public Rule(string Name)
         {
@@ -191,18 +188,22 @@ namespace Tikhole.Engine
     public class RuleAttribute : Attribute
     {
         public string Name;
-        public RuleAttribute(string Name)
+        public string? Hint;
+        public RuleAttribute(string Name, string? Hint = null)
         {
             this.Name = Name;
+            this.Hint = Hint;
         }
     }
     [AttributeUsage(AttributeTargets.Field)]
-    public class RuleParameterAttribute : Attribute
+    public class RuleFieldAttribute : Attribute
     {
         public string Name;
-        public RuleParameterAttribute(string Name)
+        public string? Hint;
+        public RuleFieldAttribute(string Name, string? Hint = null)
         {
             this.Name = Name;
+            this.Hint = Hint;
         }
     }
 }
