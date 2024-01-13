@@ -27,8 +27,8 @@
     <small><i>@ruleAttribute?.Hint</i></small>
 </p>
 <hr />
-<a href="/Rules" class="btn btn-dark">⬅️ Back</a>
-<button class="btn btn-dark">💾 Save</button>
+<a href="/Rules" class="btn btn-dark">⬅️ Cancel</a>
+<button class="btn btn-dark" @onclick="SaveSettings">💾 Save</button>
     @if (EngineRule != null)
     {
         @if (DeleteIntent)
@@ -57,24 +57,18 @@
         {
             RuleFieldAttribute? fa = field.GetCustomAttribute<RuleFieldAttribute>();
             if (fa == null) continue;
-            string? value;
-            if (field.FieldType == typeof(System.Timers.Timer))
-            {
-                value = ((System.Timers.Timer)field.GetValue(EngineRule)!).Interval.ToString();
-            }
-            else
-            {
-                value = field.GetValue(EngineRule)?.ToString();
-            }
             <div class="mb-3">
                 <label class="form-label">@fa.Name</label>
+                @{
+                    string value = Settings[field.Name];
+                }
                 @if (field.FieldType == typeof(Regex))
                 {
-                    <InputTextArea rows="10" @bind-Value="@value" class="form-control" />
+                    <InputTextArea rows="10" Value="@value" ValueExpression="() => value" ValueChanged="(value) => SetSetting(field.Name, value)" class="form-control" />
                 }
                 else
                 {
-                    <InputText @bind-Value="@value" class="form-control" />
+                    <InputText Value="@value" ValueExpression="() => value" ValueChanged="(value) => SetSetting(field.Name, value)" class="form-control" />
                 }
                 @if (fa.Hint != null) {
                     <div class="form-text">@fa.Hint</div>
@@ -88,13 +82,17 @@
     [Parameter]
     public int Index { get; set; }
     private string Error { get; set; } = "";
+    private Type EngineRuleType = typeof(Rule);
     private Engine.Rule? EngineRule;
     private bool DeleteIntent = false;
     private Assembly EngineAssembly = Assembly.GetAssembly(typeof(Engine.Tikhole))!;
+    private Dictionary<string, string> Settings = new();
     protected override void OnInitialized()
     {
         base.OnInitialized();
         if (Index < Engine.Matcher.Rules.Count && Index >= 0) EngineRule = Engine.Matcher.Rules[Index];
+        if (EngineRule != null) EngineRuleType = EngineRule.GetType();
+        LoadSettings();
     }
     private async void InvokeDelete()
     {
@@ -107,6 +105,53 @@
         await Task.Delay(2000);
         DeleteIntent = false;
         StateHasChanged();
+    }
+    private void LoadSettings()
+    {
+        foreach (FieldInfo field in EngineRuleType.GetFields().Reverse())
+        {
+            string value = field.GetValue(EngineRule)?.ToString() ?? "";
+            if (field.FieldType == typeof(System.Timers.Timer))
+            {
+                value = ((System.Timers.Timer)field.GetValue(EngineRule)!).Interval.ToString();
+            }
+            Settings.Add(field.Name, value);
+        }
+    }
+    private void SetSetting(string Setting, string Value)
+    {
+        Settings[Setting] = Value;
+    }
+    private void SaveSettings()
+    {
+        try
+        {
+            foreach (FieldInfo field in EngineRuleType.GetFields())
+            {
+                if (field.FieldType == typeof(Regex))
+                {
+                    field.SetValue(EngineRule, new Regex(Settings[field.Name]));
+                }
+                if (field.FieldType == typeof(System.Timers.Timer))
+                {
+                    field.SetValue(EngineRule, new System.Timers.Timer(double.Parse(Settings[field.Name])));
+                }
+                if (field.FieldType == typeof(Uri))
+                {
+                    field.SetValue(EngineRule, new Uri(Settings[field.Name]));
+                }
+                if (field.FieldType == typeof(string))
+                {
+                    field.SetValue(EngineRule, Settings[field.Name]);
+                }
+            }
+            Engine.Configurator.SaveConfig();
+            NavigationManager.NavigateTo("/Rules");
+        }
+        catch (Exception e)
+        {
+            Error = e.Message;
+        }
     }
     private void Delete()
     {
