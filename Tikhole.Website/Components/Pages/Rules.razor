@@ -34,8 +34,8 @@
         <span class="input-group-text">@rule.Name</span>
         <span class="input-group-text"><strong>Type</strong></span>
         <span class="input-group-text flex-grow-1">@ra.Name</span>
-        <button class="btn btn-outline-secondary" @onclick="() => {}">⬆️</button>
-        <button class="btn btn-outline-secondary" @onclick="() => {}">⬇️</button>
+        <button class="btn btn-outline-secondary" @onclick="() => MoveUp(rule)">⬆️</button>
+        <button class="btn btn-outline-secondary" @onclick="() => MoveDown(rule)">⬇️</button>
         <a href="/Rules/@index" class="btn btn-outline-secondary">✏️</a>
     </div>
     index++;
@@ -46,5 +46,21 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+    }
+    private void MoveUp(Engine.Rule Rule)
+    {
+        int index = Engine.Matcher.Rules.IndexOf(Rule) - 1;
+        if (index < 0) return;
+        Engine.Matcher.Rules.Remove(Rule);
+        Engine.Matcher.Rules.Insert(index, Rule);
+        Engine.Configurator.SaveConfig();
+    }
+    private void MoveDown(Engine.Rule Rule)
+    {
+        int index = Engine.Matcher.Rules.IndexOf(Rule) + 1;
+        if (index >= Engine.Matcher.Rules.Count) return;
+        Engine.Matcher.Rules.Remove(Rule);
+        Engine.Matcher.Rules.Insert(index, Rule);
+        Engine.Configurator.SaveConfig();
     }
 }

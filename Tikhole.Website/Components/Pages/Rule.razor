@@ -4,7 +4,7 @@
 @using System.Text.RegularExpressions
 @using global::Tikhole.Engine
 
-<PageTitle>📃 Rule: @EngineRule?.Name</PageTitle>
+<PageTitle>📃 Rule: @(EngineRule?.Name ?? "New")</PageTitle>
 
     @if (Error != "")
 {
@@ -18,49 +18,63 @@
     </div>
 }
 
-<h1>📃 Rule: @EngineRule?.Name</h1>
+<h1>📃 Rule: @(EngineRule?.Name ?? "New")</h1>
 <p class="text-secondary">
-    @{
-        RuleAttribute? ruleAttribute = EngineRule?.GetType().GetCustomAttribute<RuleAttribute>();
-    }
-    <small>@ruleAttribute?.Name</small><br />
-    <small><i>@ruleAttribute?.Hint</i></small>
-</p>
-<hr />
-<a href="/Rules" class="btn btn-dark">⬅️ Cancel</a>
-<button class="btn btn-dark" @onclick="SaveSettings">💾 Save</button>
-    @if (EngineRule != null)
+    @if (EngineRuleType == null)
     {
-        @if (DeleteIntent)
-        {
-            <button class="btn btn-dark float-end" @onclick="InvokeDelete">⚠️ Confirm?</button>
-        }
-        else
-        {
-            <button class="btn btn-dark float-end" @onclick="InvokeDelete">🗑️ Delete</button>
-        }
-    }
-<hr />
-<div style="max-width:500px;">
-    @if (EngineRule == null)
-    {
-        foreach (Type rule in EngineAssembly.GetTypes())
-        {
-            RuleAttribute? ra = rule.GetCustomAttribute<RuleAttribute>();
-            if (ra == null) continue;
-            <button class="btn btn-dark" @onclick="() => {}">@ra.Name</button>
-        }
+        <small>Select a rule type below.</small>
     }
     else
     {
-        foreach (FieldInfo field in EngineRule.GetType().GetFields().Reverse())
+        RuleAttribute? ruleAttribute = EngineRuleType.GetCustomAttribute<RuleAttribute>();
+        <small>@ruleAttribute?.Name</small><br />
+        <small><i>@ruleAttribute?.Hint</i></small>
+    }
+</p>
+<hr />
+<a href="/Rules" class="btn btn-dark">⬅️ Back</a>
+@if (EngineRuleType != null)
+{
+    <button class="btn btn-dark" @onclick="SaveSettings">💾 Save</button>
+}
+@if (EngineRule != null)
+{
+    @if (DeleteIntent)
+    {
+        <button class="btn btn-dark float-end" @onclick="InvokeDelete">⚠️ Confirm?</button>
+    }
+    else
+    {
+        <button class="btn btn-dark float-end" @onclick="InvokeDelete">🗑️ Delete</button>
+    }
+}
+<hr />
+<div style="max-width:500px;">
+    @if (EngineRuleType == null)
+    {
+        <div class="container">
+        @foreach (Type rule in EngineAssembly.GetTypes())
+        {
+            RuleAttribute? ra = rule.GetCustomAttribute<RuleAttribute>();
+            if (ra == null) continue;
+            <div class="row mb-3">
+                <button class="col-5 btn btn-dark" @onclick="() => { EngineRuleType = rule; }">@ra.Name</button>
+                <span class="col form-text">@ra.Hint</span>
+            </div>
+        }
+        </div>
+    }
+    else
+    {
+        foreach (FieldInfo field in EngineRuleType.GetFields().Reverse())
         {
             RuleFieldAttribute? fa = field.GetCustomAttribute<RuleFieldAttribute>();
             if (fa == null) continue;
             <div class="mb-3">
                 <label class="form-label">@fa.Name</label>
                 @{
-                    string value = Settings[field.Name];
+                    string value = "";
+                    if (Settings.ContainsKey(field.Name)) value = Settings[field.Name];
                 }
                 @if (field.FieldType == typeof(Regex))
                 {
@@ -82,7 +96,7 @@
     [Parameter]
     public int Index { get; set; }
     private string Error { get; set; } = "";
-    private Type EngineRuleType = typeof(Rule);
+    private Type? EngineRuleType;
     private Engine.Rule? EngineRule;
     private bool DeleteIntent = false;
     private Assembly EngineAssembly = Assembly.GetAssembly(typeof(Engine.Tikhole))!;
@@ -108,7 +122,9 @@
     }
     private void LoadSettings()
     {
-        foreach (FieldInfo field in EngineRuleType.GetFields().Reverse())
+        if (EngineRuleType == null) return;
+        Settings.Clear();
+        foreach (FieldInfo field in EngineRuleType.GetFields())
         {
             string value = field.GetValue(EngineRule)?.ToString() ?? "";
             if (field.FieldType == typeof(System.Timers.Timer))
@@ -124,29 +140,46 @@
     }
     private void SaveSettings()
     {
+        Error = "";
+        if (EngineRuleType == null) return;
         try
         {
-            foreach (FieldInfo field in EngineRuleType.GetFields())
+            List<object> parameters = new();
+            ConstructorInfo engineRuleConstructor = EngineRuleType.GetConstructors().First();
+            foreach (ParameterInfo param in engineRuleConstructor.GetParameters())
             {
-                if (field.FieldType == typeof(Regex))
+                if (param.Name == null) continue;
+                if (param.ParameterType == typeof(Regex))
                 {
-                    field.SetValue(EngineRule, new Regex(Settings[field.Name]));
+                    parameters.Add(new Regex(Settings[param.Name]));
                 }
-                if (field.FieldType == typeof(System.Timers.Timer))
+                if (param.ParameterType == typeof(System.Timers.Timer))
                 {
-                    field.SetValue(EngineRule, new System.Timers.Timer(double.Parse(Settings[field.Name])));
+                    parameters.Add(new System.Timers.Timer(double.Parse(Settings[param.Name])));
                 }
-                if (field.FieldType == typeof(Uri))
+                if (param.ParameterType == typeof(Uri))
                 {
-                    field.SetValue(EngineRule, new Uri(Settings[field.Name]));
+                    parameters.Add(new Uri(Settings[param.Name]));
                 }
-                if (field.FieldType == typeof(string))
+                if (param.ParameterType == typeof(string))
                 {
-                    field.SetValue(EngineRule, Settings[field.Name]);
+                    parameters.Add(Settings[param.Name]);
                 }
             }
+            Engine.Rule rule = (Engine.Rule)engineRuleConstructor.Invoke(parameters.ToArray());
+            if (EngineRule == null)
+            {
+                Engine.Matcher.Rules.Add(rule);
+                Index = Engine.Matcher.Rules.IndexOf(rule);
+            }
+            else
+            {
+                Engine.Matcher.Rules[Index].Dispose();
+                Engine.Matcher.Rules[Index] = rule;
+            }
             Engine.Configurator.SaveConfig();
-            NavigationManager.NavigateTo("/Rules");
+            NavigationManager.NavigateTo("/Rules/" + Index);
+            OnInitialized();
         }
         catch (Exception e)
         {
@@ -155,6 +188,12 @@
     }
     private void Delete()
     {
+        if (EngineRule != null)
+        {
+            EngineRule.Dispose();
+            Engine.Matcher.Rules.Remove(EngineRule);
+        }
+        Engine.Configurator.SaveConfig();
         NavigationManager.NavigateTo("/Rules");
     }
 }
