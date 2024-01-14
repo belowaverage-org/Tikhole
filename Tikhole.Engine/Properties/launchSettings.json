@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Tikhole.Engine": {
+      "commandName": "Project",
+      "workingDirectory": "../Tikhole.Website"
+    }
+  }
+}
