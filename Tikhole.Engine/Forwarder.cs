@@ -71,8 +71,8 @@ namespace Tikhole.Engine
             Semaphore.Release();
             Client.Send(Request.Span, Forwarder.DNSServer);
             waitHandle.WaitOne(1000);
-            waitHandle.Dispose();
             Semaphore.Wait();
+            waitHandle.Dispose();
             byte[]? response = Requests[ID].Response;
             Requests.Remove(ID);
             Semaphore.Release();

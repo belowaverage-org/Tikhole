@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml;
@@ -125,21 +126,72 @@ namespace Tikhole.Engine
             }
             SentenceBytes.AddRange(wordBytes);
         }
+        private static uint ReadWordLength(this TcpClient Client)
+        {
+            byte[] buffer = new byte[1];
+            Client.Client.Poll(TimeSpan.FromMilliseconds(1000), SelectMode.SelectRead);
+            Client.Client.Receive(buffer);
+            byte startByte = buffer[0];
+            if ((startByte & 0b11110000) == 0b11110000)
+            {
+                buffer = new byte[4];
+                Client.Client.Receive(buffer);
+                return BitConverter.ToUInt32([
+                    buffer[3],
+                    buffer[2],
+                    buffer[1],
+                    buffer[0]
+                ]);
+            }
+            else if ((startByte & 0b11100000) == 0b11100000)
+            {
+                buffer = new byte[3];
+                Client.Client.Receive(buffer);
+                return BitConverter.ToUInt32([
+                    buffer[2],
+                    buffer[1],
+                    buffer[0],
+                    (byte)(startByte & 0b00011111)
+                ]);
+            }
+            else if ((startByte & 0b11000000) == 0b11000000)
+            {
+                buffer = new byte[2];
+                Client.Client.Receive(buffer);
+                return BitConverter.ToUInt32([
+                    buffer[1],
+                    buffer[0],
+                    (byte)(startByte & 0b00111111),
+                    0
+                ]);
+            }
+            else if ((startByte & 0b10000000) == 0b10000000)
+            {
+                buffer = new byte[1];
+                Client.Client.Receive(buffer);
+                return BitConverter.ToUInt32([
+                    buffer[0],
+                    (byte)(startByte & 0b01111111),
+                    0, 0
+                ]);
+            }
+            return (uint)(startByte & 0b01111111);
+        }
+        private static string ReadWord(this TcpClient Client)
+        {
+            byte[] buffer = new byte[Client.ReadWordLength()];
+            Client.Client.Receive(buffer);
+            return Encoding.ASCII.GetString(buffer);
+        }
         private static string[] ReadSentence(this TcpClient Client)
         {
-            Client.Client.Poll(TimeSpan.FromMilliseconds(1000), SelectMode.SelectRead);
+            bool done = false;
             List<string> sentence = new();
-            if (Client.Available == 0) return sentence.ToArray();
-            byte[] bytes = new byte[Client.Available];
-            Client.Client.Receive(bytes);
-            int index = 0;
-            while (true)
+            while (!done)
             {
-                int length = bytes[index++];
-                if (index == bytes.Length) break;
-                if (length == 0) continue;
-                sentence.Add(Encoding.ASCII.GetString(bytes, index, length));
-                index += length;
+                string word = Client.ReadWord();
+                sentence.Add(word);
+                if (word == "!done") done = true;
             }
             return sentence.ToArray();
         }
