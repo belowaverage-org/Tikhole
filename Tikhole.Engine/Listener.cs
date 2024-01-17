@@ -50,6 +50,6 @@ namespace Tikhole.Engine
     public class RecievedRequestDataEventArgs : EventArgs
     {
         public required IPEndPoint IPEndPoint;
-        public required byte[] Data;
+        public required Memory<byte> Data;
     }
 }

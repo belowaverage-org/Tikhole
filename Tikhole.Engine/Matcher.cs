@@ -46,7 +46,7 @@ namespace Tikhole.Engine
                             if (rule.Matches(answer.Name) || aliases.Contains(answer.Name))
                             {
                                 int index = answer.DataIndex;
-                                string data = e.RecievedResponseData.Data.ToLabelsString(ref index);
+                                string data = e.RecievedResponseData.Data.Span.ToLabelsString(ref index);
                                 if (!aliases.Contains(data))
                                 {
                                     aliases.Add(data);

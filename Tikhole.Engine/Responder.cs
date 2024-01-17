@@ -10,7 +10,7 @@ namespace Tikhole.Engine
             if (Tikhole.Forwarder != null) Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
             if (Tikhole.Matcher != null) Tikhole.Matcher.MatchesMatchedAndOrCommitted += Matcher_MatchesMatchedAndOrCommitted;
         }
-        public void Respond(byte[] Data, IPEndPoint IPEndPoint)
+        public void Respond(Span<byte> Data, IPEndPoint IPEndPoint)
         {
             if (Tikhole.Listener == null) return;
             if (Logger.VerboseMode) Logger.Verbose("Forwarding response to " + IPEndPoint.ToString() + "...");
@@ -20,14 +20,14 @@ namespace Tikhole.Engine
         {
             if (!WaitForMatcherAndCommitter) _ = Task.Run(() =>
             {
-                Respond(e.Data, e.RecievedRequestData.IPEndPoint);
+                Respond(e.Data.Span, e.RecievedRequestData.IPEndPoint);
             });
         }
         private void Matcher_MatchesMatchedAndOrCommitted(object? sender, ParsedResponseDataEventArgs e)
         {
             if (WaitForMatcherAndCommitter)
             {
-                Respond(e.RecievedResponseData.Data, e.RecievedResponseData.RecievedRequestData.IPEndPoint);
+                Respond(e.RecievedResponseData.Data.Span, e.RecievedResponseData.RecievedRequestData.IPEndPoint);
             }
         }
     }

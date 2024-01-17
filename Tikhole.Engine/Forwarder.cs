@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 
 namespace Tikhole.Engine
@@ -33,7 +32,7 @@ namespace Tikhole.Engine
     public class RecievedResponseDataEventArgs : EventArgs
     {
         public required RecievedRequestDataEventArgs RecievedRequestData;
-        public required byte[] Data;
+        public required Memory<byte> Data;
     }
     public class Director : IDisposable
     {
@@ -58,7 +57,7 @@ namespace Tikhole.Engine
                 }
             });
         }
-        public byte[]? Forward(byte[] Request)
+        public byte[]? Forward(Memory<byte> Request)
         {
             UInt16 ID = GetID(Request);
             EventWaitHandle waitHandle = new(false, EventResetMode.ManualReset);
@@ -70,7 +69,7 @@ namespace Tikhole.Engine
             }
             Requests.Add(ID, new() { WaitHandle = waitHandle });
             Semaphore.Release();
-            Client.Send(Request, Forwarder.DNSServer);
+            Client.Send(Request.Span, Forwarder.DNSServer);
             waitHandle.WaitOne(1000);
             waitHandle.Dispose();
             Semaphore.Wait();
@@ -79,9 +78,9 @@ namespace Tikhole.Engine
             Semaphore.Release();
             return response;
         }
-        private UInt16 GetID(byte[] Request)
+        private UInt16 GetID(Memory<byte> Request)
         {
-            return BitConverter.ToUInt16(Request, 0);
+            return BitConverter.ToUInt16(Request.Span);
         }
         public void Dispose()
         {

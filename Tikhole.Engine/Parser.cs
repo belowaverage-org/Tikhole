@@ -12,31 +12,34 @@
             _ = Task.Run(() => {
                 if (Logger.VerboseMode) Logger.Verbose("Parsing response...");
                 int index = 12;
+                Span<byte> span = e.Data.Span;
                 DNSPacket packet = new()
                 {
-                    Questions = new DNSQuestionRecord[e.Data.ToUShort(4)],
-                    Answers = new DNSResourceRecord[e.Data.ToUShort(6)]
+                    Questions = new DNSQuestionRecord[span.ToUShort(4)],
+                    Answers = new DNSResourceRecord[span.ToUShort(6)]
                 };
                 for (int i = 0; i < packet.Questions.Length; i++)
                 {
-                    packet.Questions[i].Name = e.Data.ToLabelsString(ref index);
-                    packet.Questions[i].Type = (DNSType)e.Data.ToUShort(index + 1);
-                    packet.Questions[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
+                    packet.Questions[i] = new()
+                    {
+                        Name = span.ToLabelsString(ref index),
+                        Type = (DNSType)span.ToUShort(index + 1),
+                        Class = (DNSClass)span.ToUShort(index + 3)
+                    };
                     index += 5;
                 }
                 for (int i = 0; i < packet.Answers.Length; i++)
                 {
-                    packet.Answers[i].Name = e.Data.ToLabelsString(ref index);
-                    packet.Answers[i].Type = (DNSType)e.Data.ToUShort(index + 1);
-                    packet.Answers[i].Class = (DNSClass)e.Data.ToUShort(index + 3);
-                    packet.Answers[i].TimeToLive = (int)e.Data.ToUInt(index + 5);
-                    packet.Answers[i].Data = new byte[e.Data.ToUShort(index + 9)];
-                    index += 11;
-                    packet.Answers[i].DataIndex = index;
-                    for (int di = 0; di < packet.Answers[i].Data.Length; di++)
+                    packet.Answers[i] = new()
                     {
-                        packet.Answers[i].Data[di] = e.Data[index++];
-                    }
+                        Name = span.ToLabelsString(ref index),
+                        Type = (DNSType)span.ToUShort(index + 1),
+                        Class = (DNSClass)span.ToUShort(index + 3),
+                        TimeToLive = (int)span.ToUInt(index + 5),
+                        Data = e.Data.Slice(index + 11, span.ToUShort(index + 9)),
+                        DataIndex = index += 11
+                    };
+                    index += packet.Answers[i].Data.Length;
                 }
                 ParsedResponseData?.Invoke(null, new() { RecievedResponseData = e, DNSPacket = packet });
             });
@@ -47,25 +50,25 @@
         public required RecievedResponseDataEventArgs RecievedResponseData;
         public required DNSPacket DNSPacket;
     }
-    public struct DNSPacket
+    public readonly struct DNSPacket
     {
-        public required DNSQuestionRecord[] Questions;
-        public required DNSResourceRecord[] Answers;
+        public readonly DNSQuestionRecord[] Questions { get; init; }
+        public readonly DNSResourceRecord[] Answers { get; init; }
     }
-    public struct DNSQuestionRecord
+    public readonly struct DNSQuestionRecord
     {
-        public required string Name;
-        public required DNSType Type;
-        public required DNSClass Class;
+        public readonly string Name { get; init; }
+        public readonly DNSType Type { get; init; }
+        public readonly DNSClass Class { get; init; }
     }
-    public struct DNSResourceRecord
+    public readonly struct DNSResourceRecord
     {
-        public required string Name;
-        public required DNSType Type;
-        public required DNSClass Class;
-        public required int TimeToLive;
-        public required int DataIndex;
-        public required byte[] Data;
+        public readonly string Name { get; init; }
+        public readonly DNSType Type { get; init; }
+        public readonly DNSClass Class { get; init; }
+        public readonly int TimeToLive { get; init; }
+        public readonly int DataIndex { get; init; }
+        public readonly Memory<byte> Data { get; init; }
     }
     public enum DNSType
     {

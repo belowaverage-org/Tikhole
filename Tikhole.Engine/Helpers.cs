@@ -7,7 +7,7 @@ namespace Tikhole.Engine
 {
     public static class Helpers
     {
-        public static uint ToUInt(this byte[] Bytes, int Index)
+        public static uint ToUInt(this Span<byte> Bytes, int Index)
         {
             byte[] reversed =
             [
@@ -18,7 +18,7 @@ namespace Tikhole.Engine
             ];
             return BitConverter.ToUInt32(reversed);
         }
-        public static ushort ToUShort(this byte[] Bytes, int Index)
+        public static ushort ToUShort(this Span<byte> Bytes, int Index)
         {
             byte[] reversed =
             [
@@ -27,43 +27,47 @@ namespace Tikhole.Engine
             ];
             return BitConverter.ToUInt16(reversed);
         }
-        public static string ToLabelsString(this byte[] Bytes, ref int Index)
+        public static string ToLabelsString(this Span<byte> Bytes, ref int Index)
         {
-            string result = "";
+            return ToLabelsStringBuilder(Bytes, ref Index).ToString();
+        }
+        private static StringBuilder ToLabelsStringBuilder(Span<byte> Bytes, ref int Index)
+        {
+            StringBuilder result = new StringBuilder();
             while (true)
             {
                 int lLength = Bytes[Index];
                 if ((Bytes[Index] & 0b11000000) == 0b11000000)
                 {
-                    byte[] pBytes =
+                    Span<byte> pBytes =
                     [
                         (byte)(Bytes[Index] & 0b00111111),
                         Bytes[Index + 1]
                     ];
                     int pointer = pBytes.ToUShort(0);
                     Index += 1;
-                    return result + ToLabelsString(Bytes, ref pointer);
+                    return result.Append(ToLabelsStringBuilder(Bytes, ref pointer));
                 }
                 if (lLength == 0)
                 {
-                    if (result.Length > 0) result = result.Remove(result.Length - 1);
+                    if (result.Length > 0) result = result.Remove(result.Length - 1, 1);
                     break;
                 }
-                result += Encoding.ASCII.GetString(Bytes, Index + 1, lLength) + '.';
+                result.Append(Encoding.ASCII.GetString(Bytes.Slice(Index + 1, lLength))).Append('.');
                 Index += lLength + 1;
             }
             return result;
         }
         public static IPAddress[] ToAddresses(this DNSResourceRecord DNSResourceRecord)
         {
-            IPAddress[] addresses = new IPAddress[0];
+            IPAddress[] addresses = Array.Empty<IPAddress>();
             if (DNSResourceRecord.Type == DNSType.A)
             {
                 int addressCount = DNSResourceRecord.Data.Length / 4;
                 addresses = new IPAddress[addressCount];
                 for (int i = 0; i < addressCount; i++)
                 {
-                    addresses[i] = new IPAddress(DNSResourceRecord.Data.AsSpan(i * 4, i * 4 + 4));
+                    addresses[i] = new IPAddress(DNSResourceRecord.Data.Span.Slice(i * 4, i * 4 + 4));
                 }
             }
             if (DNSResourceRecord.Type == DNSType.AAAA)
@@ -72,7 +76,7 @@ namespace Tikhole.Engine
                 addresses = new IPAddress[addressCount];
                 for (int i = 0; i < addressCount; i++)
                 {
-                    addresses[i] = new IPAddress(DNSResourceRecord.Data.AsSpan(i * 16, i * 16 + 16));
+                    addresses[i] = new IPAddress(DNSResourceRecord.Data.Span.Slice(i * 16, i * 16 + 16));
                 }
             }
             return addresses;
