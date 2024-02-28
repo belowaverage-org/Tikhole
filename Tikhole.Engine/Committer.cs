@@ -35,13 +35,6 @@ namespace Tikhole.Engine
                     "=name=" + UserName,
                     "=password=" + Password
                 ]);
-                string[] response = TcpClient.SendSentence([
-                    "/ip/firewall/address-list/print",
-                    "=.proplist=.id,list,address,timeout",
-                    "",
-                    "/ipv6/firewall/address-list/print",
-                    "=.proplist=.id,list,address,timeout"
-                ]);
                 Logger.Success("Connected to " + RouterOSIPEndPoint.ToString() + ".");
             }
             catch
@@ -77,23 +70,7 @@ namespace Tikhole.Engine
                         v6 = "v6";
                         cidr = "/128";
                     }
-                    /*string[] response = TcpClient.SendSentence([
-                        "/ip" + v6 + "/firewall/address-list/print",
-                        "=.proplist=.id",
-                        "?address=" + address.ToString() + cidr,
-                        "?list=" + e.AddressListName
-                    ]);*/
                     Committed++;
-                    /*if (response.Length == 3)
-                    {
-                        TcpClient.SendSentence([
-                            "/ip" + v6 + "/firewall/address-list/set",
-                            response[1],
-                            "=comment=" + comment,
-                            "=timeout=" + ListTTL
-                        ]);
-                        continue;
-                    }*/
                     TcpClient.SendSentence([
                         "/ip" + v6 + "/firewall/address-list/add",
                         "=list=" + e.AddressListName,
