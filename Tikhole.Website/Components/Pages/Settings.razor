@@ -10,6 +10,7 @@
 <hr />
 <button @onclick="RestartTikhole" class="btn btn-dark">🔃 Restart Tikhole</button>
 <button @onclick="StopTikhole" class="btn btn-dark">🛑 Stop Tikhole</button>
+<button @onclick="SyncLists" class="btn btn-dark">🟰 Sync Lists</button>
 <hr />
 @if (Error != "")
 {
@@ -47,6 +48,11 @@
     <div class="mb-3">
         <label class="form-label">API Password</label>
         <InputText type="password" @bind-Value="CommitterPassword" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Syncer Interval</label>
+        <InputText @bind-Value="SyncerIntervalSeconds" class="form-control" />
+        <div class="form-text">How often in seconds should the syncer process re-download all of the address-list entries from RouterOS? This list is tracked in Tikhole to prevent unnecessary API calls. (restart required)</div>
     </div>
     <div class="mb-3">
         <label class="form-label">Commit Delay</label>
@@ -108,6 +114,14 @@
         Info = "";
         StateHasChanged();
     }
+    private async void SyncLists()
+    {
+        Engine.Tikhole.Syncer?.SyncNow();
+        Info = "Syncing the RouterOS address lists to Tikhole's memory...";
+        await Task.Delay(3000);
+        Info = "";
+        StateHasChanged();
+    }
     private string CommitterEndpoint
     {
         get
@@ -156,12 +170,20 @@
     {
         get
         {
-            return Engine.Committer.ListTTL;
+            return Engine.Committer.ListTTL.ToString();
         }
         set
         {
-            Engine.Committer.ListTTL = value;
-            Engine.Configurator.SaveConfig();
+            try
+            {
+                Engine.Committer.ListTTL = uint.Parse(value);
+                Engine.Configurator.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
         }
     }
     private string ForwarderDNSEndpoint
@@ -235,6 +257,26 @@
             try
             {
                 Engine.Committer.ComitterDelayMS = uint.Parse(value);
+                Engine.Configurator.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+    private string SyncerIntervalSeconds
+    {
+        get
+        {
+            return Engine.Syncer.SyncerIntervalSeconds.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Syncer.SyncerIntervalSeconds = uint.Parse(value);
                 Engine.Configurator.SaveConfig();
                 Error = "";
             }

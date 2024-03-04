@@ -1,23 +1,28 @@
-﻿using System.Net;
+﻿using System.Collections;
+using System.Net;
 using System.Net.Sockets;
 
 namespace Tikhole.Engine
 {
     public class Committer : IDisposable
     {
-        public static string ListTTL = "24h";
+        public static uint ListTTL = 86400;
         public static string UserName = "Tikhole";
         public static string Password = "";
         public static uint Committed = 0;
+        public static uint Updated = 0;
+        public static uint Missed = 0;
         public static uint ComitterTimeoutMS = 1000;
         public static uint ComitterDelayMS = 100;
         public static uint TotalInstances { get; set; } = 0;
         public static uint NeededInstances = 2;
         public static IPEndPoint RouterOSIPEndPoint = new(IPAddress.Parse("192.168.200.1"), 8728);
+        public static CommitterTrackList TrackList = new();
+        public static SemaphoreSlim TrackListSemephore = new(1, 1);
         public TcpClient TcpClient = new();
         private uint InstanceID = 0;
         private uint ResponsesRecieved = 0;
-        private SemaphoreSlim Semaphore = new(1, 1);
+        private SemaphoreSlim TcpClientSemephore = new(1, 1);
         public Committer()
         {
             InstanceID = TotalInstances++;
@@ -46,7 +51,7 @@ namespace Tikhole.Engine
         {
             if (ResponsesRecieved++ % TotalInstances != InstanceID) return;
             bool added = false;
-            if (!Semaphore.Wait((int)ComitterTimeoutMS))
+            if (!TcpClientSemephore.Wait((int)ComitterTimeoutMS))
             {
                 Logger.Warning("Committer queued for more than a " + ComitterTimeoutMS + "ms. Commit canceled.");
                 return;
@@ -62,23 +67,63 @@ namespace Tikhole.Engine
                 }
                 foreach (IPAddress address in e.Addresses)
                 {
-                    string v6 = "";
-                    string cidr = "";
+                    string[] reply;
                     string comment = "TH: " + string.Join(", ", e.MatchedNames);
-                    if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                    CommitterTrackKey ctk = new()
                     {
-                        v6 = "v6";
-                        cidr = "/128";
+                        Address = address,
+                        List = e.AddressListName
+                    };
+                    if (TrackListContains(ctk))
+                    {
+                        CommitterTrackValue ctv = TrackListGet(ctk)!.Value;
+                        if (DateTime.Now.CompareTo(ctv.Timeout) >= 0)
+                        {
+                            TrackListRemove(ctk);
+                        }
+                        else
+                        {
+                            reply = ListSet(ctv.ID, address, comment);
+                            if (reply.Length == 4)
+                            {
+                                TrackListRemove(ctk);
+                            }
+                            else
+                            {
+                                Updated++;
+                                TrackListSet(ctk, new() {
+                                    ID = ctv.ID,
+                                    Timeout = DateTime.Now.AddSeconds(ListTTL)
+                                });
+                                return;
+                            }
+                        }
                     }
-                    Committed++;
-                    TcpClient.SendSentence([
-                        "/ip" + v6 + "/firewall/address-list/add",
-                        "=list=" + e.AddressListName,
-                        "=comment=" + comment,
-                        "=address=" + address.ToString() + cidr,
-                        "=timeout=" + ListTTL
-                    ]);
-                    added = true;
+                    reply = ListAdd(address, e.AddressListName, comment);
+                    if (reply.Length == 2 && reply[1].StartsWith("=ret=*"))
+                    {
+                        Committed++;
+                        CommitterTrackValue ctv = new()
+                        {
+                            ID = reply[1].Replace("=ret=*", ""),
+                            Timeout = DateTime.Now.AddSeconds(ListTTL)
+                        };
+                        TrackListAdd(ctk, ctv);
+                        added = true;
+                        return;
+                    }
+                    Missed++;
+                    reply = ListPrint(address, e.AddressListName);
+                    if (reply.Length == 5 && reply[1].StartsWith("=.id=*"))
+                    {
+                        CommitterTrackValue ctv = new()
+                        {
+                            ID = reply[1].Split('*')[1],
+                            Timeout = DateTime.Now.AddSeconds(ListTTL)
+                        };
+                        string[] test = ListSet(ctv.ID, address, comment);
+                        TrackListAdd(ctk, ctv);
+                    }
                 }
             }
             catch
@@ -88,19 +133,123 @@ namespace Tikhole.Engine
             }
             finally
             {
-                Semaphore.Release();
+                TcpClientSemephore.Release();
                 if (added)
                 {
                     if (Logger.VerboseMode) Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
-                    //Thread.Sleep((int)ComitterDelayMS);
+                    Thread.Sleep((int)ComitterDelayMS);
                 }
             }
         }
+        private void TrackListSet(CommitterTrackKey Key, CommitterTrackValue Value)
+        {
+            TrackListSemephore.Wait();
+            TrackList[Key] = Value;
+            TrackListSemephore.Release();
+        }
+        private void TrackListRemove(CommitterTrackKey Key)
+        {
+            TrackListSemephore.Wait();
+            TrackList.Remove(Key);
+            TrackListSemephore.Release();
+        }
+        private void TrackListAdd(CommitterTrackKey Key, CommitterTrackValue Value)
+        {
+            TrackListSemephore.Wait();
+            TrackList.Add(Key, Value);
+            TrackListSemephore.Release();
+        }
+        private bool TrackListContains(CommitterTrackKey Key)
+        {
+            bool result = false;
+            TrackListSemephore.Wait();
+            result = TrackList.Contains(Key);
+            TrackListSemephore.Release();
+            return result;
+        }
+        private CommitterTrackValue? TrackListGet(CommitterTrackKey Key)
+        {
+            CommitterTrackValue? result;
+            TrackListSemephore.Wait();
+            result = TrackList[Key];
+            TrackListSemephore.Release();
+            return result;
+        }
+        private string[] ListAdd(IPAddress IPAddress, string List, string Comment)
+        {
+            (string v6, string cidr) = AddressBits(IPAddress);
+            return TcpClient.SendSentence([
+                "/ip" + v6 + "/firewall/address-list/add",
+                "=list=" + List,
+                "=comment=" + Comment,
+                "=address=" + IPAddress.ToString() + cidr,
+                "=timeout=" + ListTTL.ToString()
+            ]);
+        }
+        private string[] ListSet(string ID, IPAddress IPAddress, string Comment)
+        {
+            (string v6, string cidr) = AddressBits(IPAddress);
+            return TcpClient.SendSentence([
+                "/ip" + v6 + "/firewall/address-list/set",
+                "=numbers=*" + ID,
+                "=comment=" + Comment,
+                "=address=" + IPAddress.ToString() + cidr,
+                "=timeout=" + ListTTL.ToString()
+            ]);
+        }
+        private string[] ListPrint(IPAddress IPAddress, string List)
+        {
+            (string v6, string cidr) = AddressBits(IPAddress);
+            return TcpClient.SendSentence([
+                "/ip" + v6 + "/firewall/address-list/print",
+                "=.proplist=.id,timeout",
+                "?list=" + List,
+                "?address=" + IPAddress.ToString() + cidr
+            ]);
+        }
+        private (string, string) AddressBits(IPAddress IPAddress)
+        {
+            string v6 = "";
+            string cidr = "";
+            if (IPAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                v6 = "v6";
+                cidr = "/128";
+            }
+            return (v6, cidr);
+        }
         public void Dispose()
         {
+            Logger.Info("Disconnecting from " + RouterOSIPEndPoint.ToString() + "...");
             if (TcpClient.Connected) TcpClient.Close();
             TcpClient.Dispose();
-            Semaphore.Dispose();
+            TcpClientSemephore.Dispose();
         }
+    }
+    public class CommitterTrackList : Hashtable
+    {
+        public CommitterTrackValue? this[CommitterTrackKey Key] { get => (CommitterTrackValue?)base[Key]; set => base[Key] = value; }
+        public void Add(CommitterTrackKey Key, CommitterTrackValue Value)
+        {
+            if (!base.Contains(Key)) base.Add(Key, Value);
+        }
+        public void Remove(CommitterTrackKey Key)
+        {
+            base.Remove(Key);
+        }
+        public bool Contains(CommitterTrackKey Key)
+        {
+            return base.Contains(Key);
+        }
+    }
+    public struct CommitterTrackKey
+    {
+        public string List;
+        public IPAddress Address;
+    }
+    public struct CommitterTrackValue
+    {
+        public string ID;
+        public DateTime Timeout;
     }
 }

@@ -18,6 +18,7 @@ namespace Tikhole.Engine
                 config.ReadSetting("/Tikhole/RouterOS/ApiPassword", ref Committer.Password);
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
                 config.ReadSetting("/Tikhole/RouterOS/ComitterDelayMS", ref Committer.ComitterDelayMS);
+                config.ReadSetting("/Tikhole/RouterOS/SyncerIntervalSeconds", ref Syncer.SyncerIntervalSeconds);
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
                 config.ReadSetting("/Tikhole/RouterOS/ApiConnections", ref Committer.NeededInstances);
                 config.ReadSetting("/Tikhole/Forwarder/DnsEndpoint", ref Forwarder.DNSServer);
@@ -39,12 +40,13 @@ namespace Tikhole.Engine
                 XmlDocument config = new();
                 XmlNode? root = config.AppendChild(config.CreateElement("Tikhole"));
                 XmlNode? routerOS = root?.AppendChild(config.CreateElement("RouterOS"));
-                routerOS?.AddSetting("IPListTimeout", Committer.ListTTL);
+                routerOS?.AddSetting("IPListTimeout", Committer.ListTTL.ToString());
                 routerOS?.AddSetting("ApiUserName", Committer.UserName);
                 routerOS?.AddSetting("ApiPassword", Committer.Password);
                 routerOS?.AddSetting("ApiEndpoint", Committer.RouterOSIPEndPoint.ToString());
                 routerOS?.AddSetting("ApiConnections", Committer.NeededInstances.ToString());
                 routerOS?.AddSetting("ComitterDelayMS", Committer.ComitterDelayMS.ToString());
+                routerOS?.AddSetting("SyncerIntervalSeconds", Syncer.SyncerIntervalSeconds.ToString());
                 XmlNode? forwarder = root?.AppendChild(config.CreateElement("Forwarder"));
                 forwarder?.AddSetting("DnsEndpoint", Forwarder.DNSServer.ToString());
                 XmlNode? responder = root?.AppendChild(config.CreateElement("Responder"));

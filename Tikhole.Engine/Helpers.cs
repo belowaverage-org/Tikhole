@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml;
@@ -179,7 +178,9 @@ namespace Tikhole.Engine
         }
         private static string ReadWord(this TcpClient Client)
         {
-            byte[] buffer = new byte[Client.ReadWordLength()];
+            uint length = Client.ReadWordLength();
+            if (length == 0) return "";
+            byte[] buffer = new byte[length];
             Client.Client.Receive(buffer);
             return Encoding.ASCII.GetString(buffer);
         }
@@ -187,11 +188,12 @@ namespace Tikhole.Engine
         {
             bool done = false;
             List<string> sentence = new();
-            while (!done)
+            while (true)
             {
                 string word = Client.ReadWord();
-                sentence.Add(word);
                 if (word == "!done") done = true;
+                if (done && word == "") break;
+                sentence.Add(word);
             }
             return sentence.ToArray();
         }

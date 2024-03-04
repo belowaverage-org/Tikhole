@@ -9,6 +9,7 @@ namespace Tikhole.Engine
         public static Forwarder? Forwarder;
         public static Parser? Parser;
         public static Matcher? Matcher;
+        public static Syncer? Syncer;
         public static Committer[]? Committers;
         public static void Main()
         {
@@ -25,6 +26,7 @@ namespace Tikhole.Engine
             Forwarder = new Forwarder();
             Parser = new Parser();
             Matcher = new Matcher();
+            Syncer = new Syncer();
             Committer.TotalInstances = 0;
             Committers = new Committer[Committer.NeededInstances];
             for (int i = 0; i < Committer.NeededInstances; i++) Committers[i] = new Committer();
@@ -34,8 +36,10 @@ namespace Tikhole.Engine
         {
             Listener?.Dispose();
             Forwarder?.Dispose();
+            Syncer?.Dispose();
             foreach (Rule rule in Matcher.Rules) rule.Dispose();
             if (Committers != null) foreach (Committer c in Committers) c.Dispose();
+            Committer.TrackList.Clear();
         }
     }
 }
