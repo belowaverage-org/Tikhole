@@ -11,6 +11,7 @@
 <button @onclick="RestartTikhole" class="btn btn-dark">🔃 Restart Tikhole</button>
 <button @onclick="StopTikhole" class="btn btn-dark">🛑 Stop Tikhole</button>
 <button @onclick="SyncLists" class="btn btn-dark">🟰 Sync Lists</button>
+<button @onclick="Shutdown" class="btn btn-dark">❌ Shutdown</button>
 <hr />
 @if (Error != "")
 {
@@ -121,6 +122,10 @@
         await Task.Delay(3000);
         Info = "";
         StateHasChanged();
+    }
+    private void Shutdown()
+    {
+        _ = Tikhole.WebApplication?.StopAsync();
     }
     private string CommitterEndpoint
     {

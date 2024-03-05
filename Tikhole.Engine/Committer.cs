@@ -86,6 +86,7 @@ namespace Tikhole.Engine
                             reply = ListSet(ctv.ID, address, comment);
                             if (reply.Length == 4)
                             {
+                                Missed++;
                                 TrackListRemove(ctk);
                             }
                             else
@@ -95,7 +96,7 @@ namespace Tikhole.Engine
                                     ID = ctv.ID,
                                     Timeout = DateTime.Now.AddSeconds(ListTTL)
                                 });
-                                return;
+                                continue;
                             }
                         }
                     }
@@ -110,7 +111,7 @@ namespace Tikhole.Engine
                         };
                         TrackListAdd(ctk, ctv);
                         added = true;
-                        return;
+                        continue;
                     }
                     Missed++;
                     reply = ListPrint(address, e.AddressListName);
