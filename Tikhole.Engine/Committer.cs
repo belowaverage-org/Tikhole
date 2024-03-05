@@ -229,9 +229,10 @@ namespace Tikhole.Engine
     public class CommitterTrackList : Hashtable
     {
         public CommitterTrackValue? this[CommitterTrackKey Key] { get => (CommitterTrackValue?)base[Key]; set => base[Key] = value; }
+        public CommitterTrackList() : base() { }
         public void Add(CommitterTrackKey Key, CommitterTrackValue Value)
         {
-            if (!base.Contains(Key)) base.Add(Key, Value);
+            if (!Contains(Key)) base.Add(Key, Value);
         }
         public void Remove(CommitterTrackKey Key)
         {
@@ -242,10 +243,15 @@ namespace Tikhole.Engine
             return base.Contains(Key);
         }
     }
+    
     public struct CommitterTrackKey
     {
         public string List;
         public IPAddress Address;
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(List.GetHashCode(), Address.GetHashCode());
+        }
     }
     public struct CommitterTrackValue
     {
