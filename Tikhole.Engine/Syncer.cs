@@ -77,8 +77,14 @@ namespace Tikhole.Engine
                     }
                     if (word == "")
                     {
-                        if (!skip) stagedTrackList.Add(CTK, CTV);
-                        skip = false;
+                        if (skip)
+                        {
+                            skip = false;
+                            continue;
+                        }
+                        CTV.Timeout = DateTime.Now.AddDays(1);
+                        if (CTV.Timeout == new DateTime()) continue;
+                        stagedTrackList.Add(CTK, CTV);
                     }
                 }
                 Logger.Info("Swapping lists...");
