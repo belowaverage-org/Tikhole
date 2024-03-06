@@ -73,7 +73,23 @@ namespace Tikhole.Engine
                     }
                     if (word.StartsWith("=timeout="))
                     {
-                        CTV.Timeout = DateTime.Now.AddDays(1); //THIS NEEDS REPLACED WITH PARSED DATETIME.
+                        string sNumber = string.Empty;
+                        string time = word.Replace("=timeout=", "");
+                        DateTime timeout = DateTime.Now;
+                        foreach (char character in time)
+                        {
+                            if ("1234567890".Contains(character)) sNumber += character;
+                            if ("wdhms".Contains(character) && uint.TryParse(sNumber, out uint number))
+                            {
+                                if (character == 'w') timeout = timeout.AddDays(number * 7);
+                                if (character == 'd') timeout = timeout.AddDays(number);
+                                if (character == 'h') timeout = timeout.AddHours(number);
+                                if (character == 'm') timeout = timeout.AddMinutes(number);
+                                if (character == 's') timeout = timeout.AddSeconds(number);
+                                sNumber = string.Empty;
+                            }
+                        }
+                        CTV.Timeout = timeout;
                     }
                     if (word == "")
                     {
@@ -82,7 +98,6 @@ namespace Tikhole.Engine
                             skip = false;
                             continue;
                         }
-                        CTV.Timeout = DateTime.Now.AddDays(1); //THIS NEEDS REMOVED.
                         if (CTV.Timeout == new DateTime()) continue;
                         stagedTrackList.Add(CTK, CTV);
                     }
