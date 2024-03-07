@@ -67,7 +67,6 @@ namespace Tikhole.Engine
         private void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
         {
             if (ResponsesRecieved++ % TotalInstances != InstanceID) return;
-            bool added = false;
             if (!TcpClientSemephore.Wait((int)ComitterTimeoutMS))
             {
                 Logger.Warning("Committer queued for more than a " + ComitterTimeoutMS + "ms. Commit canceled.");
@@ -161,11 +160,6 @@ namespace Tikhole.Engine
             finally
             {
                 TcpClientSemephore.Release();
-                if (added)
-                {
-                    if (Logger.VerboseMode) Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
-                    Thread.Sleep((int)ComitterDelayMS);
-                }
             }
         }
         private void TrackListSet(CommitterTrackKey Key, CommitterTrackValue Value)
@@ -205,13 +199,17 @@ namespace Tikhole.Engine
         private string[] ListAdd(IPAddress IPAddress, string List, string Comment)
         {
             (string v6, string cidr) = AddressBits(IPAddress);
-            return TcpClient.SendSentence([
+            string[] result = TcpClient.SendSentence([
                 "/ip" + v6 + "/firewall/address-list/add",
                 "=list=" + List,
                 "=comment=" + Comment,
                 "=address=" + IPAddress.ToString() + cidr,
                 "=timeout=" + ListTTL.ToString()
             ]);
+            if (Logger.VerboseMode) Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
+            Thread.Sleep((int)ComitterDelayMS);
+            return result;
+
         }
         private string[] ListSet(string ID, IPAddress IPAddress, string Comment)
         {
