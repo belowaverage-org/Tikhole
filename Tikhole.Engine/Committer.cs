@@ -135,7 +135,6 @@ namespace Tikhole.Engine
                             Timeout = DateTime.Now.AddSeconds(ListTTL)
                         };
                         TrackListAdd(ctk, ctv);
-                        added = true;
                         continue;
                     }
                     Missed++;
