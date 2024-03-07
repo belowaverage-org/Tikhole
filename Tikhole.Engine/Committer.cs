@@ -7,11 +7,13 @@ namespace Tikhole.Engine
     public class Committer : IDisposable
     {
         public static uint ListTTL = 86400;
+        public static uint ListTTLUpdateDelay = 3600;
         public static string UserName = "Tikhole";
         public static string Password = "";
         public static uint Committed = 0;
         public static uint Updated = 0;
         public static uint Missed = 0;
+        public static uint Delayed = 0;
         public static uint ComitterTimeoutMS = 1000;
         public static uint ComitterDelayMS = 100;
         public static uint TotalInstances { get; set; } = 0;
@@ -37,6 +39,7 @@ namespace Tikhole.Engine
             Committed = 0;
             Updated = 0;
             Missed = 0;
+            Delayed = 0;
             TrackList = new();
             TrackListSemephore.Dispose();
             TrackListSemephore = new(1, 1);
@@ -97,19 +100,28 @@ namespace Tikhole.Engine
                         }
                         else
                         {
-                            reply = ListSet(ctv.ID, address, comment);
-                            if (reply.Length == 4)
+                            if (DateTime.Now.AddSeconds(ListTTL - ListTTLUpdateDelay).CompareTo(ctv.Timeout) >= 0)
                             {
-                                Missed++;
-                                TrackListRemove(ctk);
+                                reply = ListSet(ctv.ID, address, comment);
+                                if (reply.Length == 4)
+                                {
+                                    Missed++;
+                                    TrackListRemove(ctk);
+                                }
+                                else
+                                {
+                                    Updated++;
+                                    TrackListSet(ctk, new()
+                                    {
+                                        ID = ctv.ID,
+                                        Timeout = DateTime.Now.AddSeconds(ListTTL)
+                                    });
+                                    continue;
+                                }
                             }
                             else
                             {
-                                Updated++;
-                                TrackListSet(ctk, new() {
-                                    ID = ctv.ID,
-                                    Timeout = DateTime.Now.AddSeconds(ListTTL)
-                                });
+                                Delayed++;
                                 continue;
                             }
                         }

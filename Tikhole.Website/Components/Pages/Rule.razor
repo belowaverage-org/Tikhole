@@ -129,7 +129,7 @@
             string value = field.GetValue(EngineRule)?.ToString() ?? "";
             if (field.FieldType == typeof(System.Timers.Timer))
             {
-                value = ((System.Timers.Timer)field.GetValue(EngineRule)!).Interval.ToString();
+                value = (((System.Timers.Timer)field.GetValue(EngineRule)!).Interval / 1000).ToString();
             }
             Settings.Add(field.Name, value);
         }
@@ -155,7 +155,7 @@
                 }
                 if (param.ParameterType == typeof(System.Timers.Timer))
                 {
-                    parameters.Add(new System.Timers.Timer(double.Parse(Settings[param.Name])));
+                    parameters.Add(new System.Timers.Timer(double.Parse(Settings[param.Name]) * 1000));
                 }
                 if (param.ParameterType == typeof(Uri))
                 {

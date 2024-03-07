@@ -225,7 +225,7 @@ namespace Tikhole.Engine
         }
         private static void AddRuleHostFile(this XmlNode Parent, XmlNode XRule, RuleHashSetDownloadableHostFile Rule)
         {
-            XmlAttribute xUpdateIntervalMS = Parent.OwnerDocument!.CreateAttribute("UpdateIntervalMS");
+            XmlAttribute xUpdateIntervalMS = Parent.OwnerDocument!.CreateAttribute("UpdateIntervalSeconds");
             xUpdateIntervalMS.InnerText = Rule.UpdateTimer.Interval.ToString();
             XRule.Attributes?.Append(xUpdateIntervalMS);
             XRule.InnerText = Rule.Uri.ToString();
@@ -291,7 +291,7 @@ namespace Tikhole.Engine
                 new RuleHashSetDownloadableHostFile(
                     Node.Name,
                     new(Node.InnerText),
-                    new(double.Parse(Node.Attributes!["UpdateIntervalMS"]!.InnerText))
+                    new(double.Parse(Node.Attributes!["UpdateIntervalSeconds"]!.InnerText))
                 )
             );
         }

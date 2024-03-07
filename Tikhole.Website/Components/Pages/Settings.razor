@@ -8,10 +8,10 @@
     <small>A list of Tikhole settings. Changes made here are in real-time.</small>
 </p>
 <hr />
-<button @onclick="RestartTikhole" class="btn btn-dark">🔃 Restart Tikhole</button>
-<button @onclick="StopTikhole" class="btn btn-dark">🛑 Stop Tikhole</button>
-<button @onclick="SyncLists" class="btn btn-dark">🟰 Sync Lists</button>
-<button @onclick="Shutdown" class="btn btn-dark">❌ Shutdown</button>
+<button @onclick="RestartTikhole" class="btn mt-1 mb-1 me-1 btn-dark">🔃 Restart Tikhole</button>
+<button @onclick="StopTikhole" class="btn mt-1 mb-1 me-1 btn-dark">🛑 Stop Tikhole</button>
+<button @onclick="SyncLists" class="btn mt-1 mb-1 me-1 btn-dark">🟰 Sync Lists</button>
+<button @onclick="Shutdown" class="btn mt-1 mb-1 me-1 btn-dark">❌ Shutdown</button>
 <hr />
 @if (Error != "")
 {
@@ -56,11 +56,6 @@
         <div class="form-text">How often in seconds should the syncer process re-download all of the address-list entries from RouterOS? This list is tracked in Tikhole to prevent unnecessary API calls. (restart required)</div>
     </div>
     <div class="mb-3">
-        <label class="form-label">Commit Delay</label>
-        <InputText @bind-Value="ComitterDelayMS" class="form-control" />
-        <div class="form-text">After a DNS response is matched and committed, Tikhole will wait this many milliseconds before forwarding the DNS response since RouterOS takes some time process the new IP on an address list. This only happens on commits that are adding to an address list. Commits that just refresh the timeout do not delay DNS responses.</div>
-    </div>
-    <div class="mb-3">
         <label class="form-label">Connection Count</label>
         <InputText @bind-Value="CommitterNeededInstances" class="form-control" />
         <div class="form-text">How many connections should Tikhole open to the RouterOS API? (restart required)</div>
@@ -69,7 +64,13 @@
     <div class="mb-3">
         <label class="form-label">IP List Timeout</label>
         <InputText @bind-Value="CommiterIPListTimeout" class="form-control" />
-        <div class="form-text">This is the timeout value used when a matched DNS record is added to the RouterOS firewall IP list.</div>
+        <div class="form-text">This is the timeout value in seconds used when a matched DNS record is added to the RouterOS firewall IP list.</div>
+    </div>
+    <hr />
+    <div class="mb-3">
+        <label class="form-label">IP List Update Delay</label>
+        <InputText @bind-Value="CommiterIPListUpdateDelay" class="form-control" />
+        <div class="form-text">Only update an IP list entry in RouterOS if it is older than this amount of seconds.</div>
     </div>
     <hr />
     <h5>⏩ Forwarder Settings</h5>
@@ -86,6 +87,11 @@
         <label class="form-label">Respond After Match and or Commit</label>
         <InputText @bind-Value="ResponderWaitForMatchCommit" class="form-control" />
         <div class="form-text">Wait for the matching and committer engine before replying to a DNS query.</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Commit Delay</label>
+        <InputText @bind-Value="ComitterDelayMS" class="form-control" />
+        <div class="form-text">After a DNS response is matched and committed, Tikhole will wait this many milliseconds before forwarding the DNS response since RouterOS takes some time process the new IP on an address list. This only happens on commits that are adding to an address list. Commits that just refresh the timeout do not delay DNS responses.</div>
     </div>
     <hr />
     <h5>📜 Logger Settings</h5>
@@ -182,6 +188,26 @@
             try
             {
                 Engine.Committer.ListTTL = uint.Parse(value);
+                Engine.Configurator.SaveConfig();
+                Error = "";
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
+        }
+    }
+    private string CommiterIPListUpdateDelay
+    {
+        get
+        {
+            return Engine.Committer.ListTTLUpdateDelay.ToString();
+        }
+        set
+        {
+            try
+            {
+                Engine.Committer.ListTTLUpdateDelay = uint.Parse(value);
                 Engine.Configurator.SaveConfig();
                 Error = "";
             }

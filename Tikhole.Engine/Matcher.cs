@@ -126,7 +126,7 @@ namespace Tikhole.Engine
     {
         [RuleField("File Download", "The file's URL to download from.")]
         public Uri Uri;
-        [RuleField("Update Timer", "The interval in milliseconds in which Tikhole will re-download the file.")]
+        [RuleField("Update Timer", "The interval in seconds in which Tikhole will re-download the file.")]
         public System.Timers.Timer UpdateTimer;
         private protected static HttpClient HttpClient = new();
         public RuleHashSetDownloadable(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name)

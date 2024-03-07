@@ -14,6 +14,7 @@ namespace Tikhole.Engine
                 XmlDocument config = new();
                 config.Load(ConfigFileName);
                 config.ReadSetting("/Tikhole/RouterOS/IPListTimeout", ref Committer.ListTTL);
+                config.ReadSetting("/Tikhole/RouterOS/IPListTimeoutUpdateDelay", ref Committer.ListTTLUpdateDelay);
                 config.ReadSetting("/Tikhole/RouterOS/ApiUserName", ref Committer.UserName);
                 config.ReadSetting("/Tikhole/RouterOS/ApiPassword", ref Committer.Password);
                 config.ReadSetting("/Tikhole/RouterOS/ApiEndpoint", ref Committer.RouterOSIPEndPoint);
@@ -41,6 +42,7 @@ namespace Tikhole.Engine
                 XmlNode? root = config.AppendChild(config.CreateElement("Tikhole"));
                 XmlNode? routerOS = root?.AppendChild(config.CreateElement("RouterOS"));
                 routerOS?.AddSetting("IPListTimeout", Committer.ListTTL.ToString());
+                routerOS?.AddSetting("IPListTimeoutUpdateDelay", Committer.ListTTLUpdateDelay.ToString());
                 routerOS?.AddSetting("ApiUserName", Committer.UserName);
                 routerOS?.AddSetting("ApiPassword", Committer.Password);
                 routerOS?.AddSetting("ApiEndpoint", Committer.RouterOSIPEndPoint.ToString());
