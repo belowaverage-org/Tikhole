@@ -92,12 +92,19 @@
 <div class="row row-cols-1 row-cols-md-1 g-4 mb-3">
     <div class="col">
         <div class="card h-100">
-            <div class="card-header">🔬 <b>Last @RequestQueueMax Requests</b></div>
-            <div class="card-body">
+            <div class="card-header">
+                <span>👀 <b>Last @RequestQueueMax Requests</b></span>
+                <div class="form-check form-switch float-end">
+                    <input @bind-value="FreezeList" class="form-check-input" type="checkbox" id="freezeToggle">
+                </div>
+                <span class="float-end me-2">Freeze: </span>
+            </div>
+            <div class="card-body overflow-auto">
                 <table class="table">
                     <thead>
                         <tr>
                             <th scope="col">Question</th>
+                            <th scope="col">Lists</th>
                             <th scope="col">Type</th>
                             <th scope="col">Answers</th>
                         </tr>
@@ -116,6 +123,7 @@
                             }
                             <tr>
                                 <td scope="row">@packet.Questions[0].Name</td>
+                                <td></td>
                                 <td>@packet.Questions[0].Type</td>
                                 <td>@string.Join(", ", IPAddresses)</td>
                             </tr>
@@ -135,7 +143,19 @@
     private Timer Timer = new(1000);
     private Process Process = Process.GetCurrentProcess();
     private TimeSpan CPULast;
-    double CPUUsage = 0;
+    private double CPUUsage = 0;
+    private bool _FreezeList = false;
+    private bool FreezeList
+    {
+        get
+        {
+            return _FreezeList;
+        }
+        set
+        {
+            _FreezeList = value;
+        }
+    }
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -160,6 +180,7 @@
     }
     private void Parser_ParsedResponseData(object? sender, Engine.ParsedResponseDataEventArgs e)
     {
+        if (FreezeList) return;
         _ = Task.Run(() =>
         {
             Semaphore.Wait();
