@@ -19,8 +19,7 @@ namespace Tikhole.Website
         }
         public static void StopTikhole()
         {
-            Engine.Dispose();   
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive | GCCollectionMode.Forced, true);
+            Engine.Dispose();
         }
         public static void RestartTikhole()
         {

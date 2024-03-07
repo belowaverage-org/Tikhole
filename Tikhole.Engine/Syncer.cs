@@ -11,11 +11,20 @@ namespace Tikhole.Engine
         public static uint SyncerIntervalSeconds = 300;
         public Syncer()
         {
+            Logger.Info("Starting Syncer...");
             Timer.Elapsed += SyncNow;
             Timer.Enabled = true;
             Timer.Interval = SyncerIntervalSeconds * 1000;
             Timer.Start();
             SyncNow();
+        }
+        public void Dispose()
+        {
+            TcpClient?.Dispose();
+            Timer.Stop();
+            Timer.Dispose();
+            Running = false;
+            Logger.Info("Syncer stopped.");
         }
         public async void SyncNow(object? o = null, object? e = null)
         {
@@ -109,12 +118,6 @@ namespace Tikhole.Engine
                 Logger.Success("Done updating committer tracking list.");
             });
             Running = false;
-        }
-        public void Dispose()
-        {
-            TcpClient?.Dispose();
-            Timer.Stop();
-            Timer.Dispose();
         }
     }
 }

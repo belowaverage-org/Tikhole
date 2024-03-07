@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Tikhole.Engine
 {
-    public class Matcher
+    public class Matcher : IDisposable
     {
         public static uint Matches = 0;
         public static Rules Rules = new();
@@ -11,7 +11,14 @@ namespace Tikhole.Engine
         public event EventHandler<ParsedResponseDataEventArgs>? MatchesMatchedAndOrCommitted;
         public Matcher()
         {
+            Logger.Info("Starting Matcher...");
             if (Tikhole.Parser != null) Tikhole.Parser.ParsedResponseData += Parser_ParsedResponseData;
+        }
+        public void Dispose()
+        {
+            Matches = 0;
+            Rules = new();
+            Logger.Info("Matcher stopped.");
         }
         private void Parser_ParsedResponseData(object? sender, ParsedResponseDataEventArgs e)
         {
@@ -131,6 +138,11 @@ namespace Tikhole.Engine
             UpdateTimer.Start();
             UpdateList();
         }
+        public override void Dispose()
+        {
+            UpdateTimer.Stop();
+            UpdateTimer.Dispose();
+        }
         public virtual void UpdateList(object? a = null, object? b = null)
         {
             List.Clear();
@@ -138,11 +150,6 @@ namespace Tikhole.Engine
         public override bool Matches(string Hostname)
         {
             return List.Contains(Hostname);
-        }
-        public override void Dispose()
-        {
-            UpdateTimer.Stop();
-            UpdateTimer.Dispose();
         }
     }
     [Rule("Regular Expression", "Rule based off of a specified regular expression.")]
@@ -154,11 +161,11 @@ namespace Tikhole.Engine
         {
             this.Regex = Regex;
         }
+        public override void Dispose() { }
         public override bool Matches(string Hostname)
         {
             return Regex.IsMatch(Hostname);
         }
-        public override void Dispose() { }
     }
     public abstract class RuleHashSet : Rule
     {

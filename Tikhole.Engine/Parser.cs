@@ -1,11 +1,16 @@
 ﻿namespace Tikhole.Engine
 {
-    public class Parser
+    public class Parser : IDisposable
     {
         public event EventHandler<ParsedResponseDataEventArgs>? ParsedResponseData;
         public Parser()
         {
+            Logger.Info("Starting Parser...");
             if (Tikhole.Forwarder != null) Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
+        }
+        public void Dispose()
+        {
+            Logger.Info("Parser stopped.");
         }
         private void Forwarder_RecievedResponseData(object? sender, RecievedResponseDataEventArgs e)
         {

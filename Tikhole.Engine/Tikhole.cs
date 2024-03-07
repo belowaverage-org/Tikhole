@@ -10,6 +10,7 @@ namespace Tikhole.Engine
         public static Parser? Parser;
         public static Matcher? Matcher;
         public static Syncer? Syncer;
+        public static Responder? Responder;
         public static Committer[]? Committers;
         public static void Main()
         {
@@ -30,16 +31,27 @@ namespace Tikhole.Engine
             Committer.TotalInstances = 0;
             Committers = new Committer[Committer.NeededInstances];
             for (int i = 0; i < Committer.NeededInstances; i++) Committers[i] = new Committer();
-            new Responder();
+            Responder = new Responder();
         }
         public void Dispose()
         {
-            Listener?.Dispose();
-            Forwarder?.Dispose();
-            Syncer?.Dispose();
             foreach (Rule rule in Matcher.Rules) rule.Dispose();
+            Listener?.Dispose(); 
+            Listener = null;
+            Forwarder?.Dispose();
+            Forwarder = null;
+            Parser?.Dispose();
+            Parser = null;
+            Matcher?.Dispose();
+            Matcher = null;
+            Syncer?.Dispose();
+            Syncer = null;
+            Responder?.Dispose();
+            Responder = null;
             if (Committers != null) foreach (Committer c in Committers) c.Dispose();
-            Committer.TrackList.Clear();
+            Committers = null;
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive | GCCollectionMode.Forced, true);
+            Logger.Info(Assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product + " stopped.");
         }
     }
 }

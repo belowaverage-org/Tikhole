@@ -10,8 +10,14 @@ namespace Tikhole.Engine
         public event EventHandler<RecievedResponseDataEventArgs>? RecievedResponseData;
         public Forwarder()
         {
-            Logger.Info("Forwarder set for " + DNSServer.ToString() + ".");
+            Logger.Info("Starting Forwarder: Destination set for " + DNSServer.ToString() + "...");
             if (Tikhole.Listener != null) Tikhole.Listener.RecievedRequestData += Listener_RecievedRequestData;
+        }
+        public void Dispose()
+        {
+            Director.Dispose();
+            Director = new();
+            Logger.Info("Forwarder stopped.");
         }
         private void Listener_RecievedRequestData(object? sender, RecievedRequestDataEventArgs e)
         {
@@ -23,10 +29,6 @@ namespace Tikhole.Engine
                 return;
             }
             RecievedResponseData?.Invoke(null, new() { RecievedRequestData = e, Data = response });
-        }
-        public void Dispose()
-        {
-            Director.Dispose();
         }
     }
     public class RecievedResponseDataEventArgs : EventArgs
@@ -57,6 +59,11 @@ namespace Tikhole.Engine
                 }
             });
         }
+        public void Dispose()
+        {
+            Semaphore.Dispose();
+            Client.Dispose();
+        }
         public byte[]? Forward(Memory<byte> Request)
         {
             UInt16 ID = GetID(Request);
@@ -81,11 +88,6 @@ namespace Tikhole.Engine
         private UInt16 GetID(Memory<byte> Request)
         {
             return BitConverter.ToUInt16(Request.Span);
-        }
-        public void Dispose()
-        {
-            Semaphore.Dispose();
-            Client.Dispose();
         }
         private record Request
         {

@@ -25,8 +25,22 @@ namespace Tikhole.Engine
         private SemaphoreSlim TcpClientSemephore = new(1, 1);
         public Committer()
         {
+            Logger.Info("Starting Committer...");
             InstanceID = TotalInstances++;
             if (Tikhole.Matcher != null) Tikhole.Matcher.ResponseMatched += Matcher_ResponseMatched;
+        }
+        public void Dispose()
+        {
+            if (TcpClient.Connected) TcpClient.Close();
+            TcpClient.Dispose();
+            TcpClientSemephore.Dispose();
+            Committed = 0;
+            Updated = 0;
+            Missed = 0;
+            TrackList = new();
+            TrackListSemephore.Dispose();
+            TrackListSemephore = new(1, 1);
+            Logger.Info("Committer stopped.");
         }
         private void Login()
         {
@@ -218,13 +232,6 @@ namespace Tikhole.Engine
                 cidr = "/128";
             }
             return (v6, cidr);
-        }
-        public void Dispose()
-        {
-            Logger.Info("Disconnecting from " + RouterOSIPEndPoint.ToString() + "...");
-            if (TcpClient.Connected) TcpClient.Close();
-            TcpClient.Dispose();
-            TcpClientSemephore.Dispose();
         }
     }
     public class CommitterTrackList : Hashtable

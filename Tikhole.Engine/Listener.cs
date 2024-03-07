@@ -13,7 +13,7 @@ namespace Tikhole.Engine
         {
             try
             {
-                Logger.Info("Starting listnener on " + IPEndPoint.ToString() + "...");
+                Logger.Info("Starting Listnener on " + IPEndPoint.ToString() + "...");
                 Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 Client.Client.Bind(IPEndPoint);
                 Task listener = new Task(() =>
@@ -45,6 +45,8 @@ namespace Tikhole.Engine
         public void Dispose()
         {
             Client.Dispose();
+            Requests = 0;
+            Logger.Info("Listener stopped.");
         }
     }
     public class RecievedRequestDataEventArgs : EventArgs

@@ -2,13 +2,19 @@
 
 namespace Tikhole.Engine
 {
-    public class Responder
+    public class Responder : IDisposable
     {
         public static bool WaitForMatcherAndCommitter = true;
         public Responder()
         {
+            Logger.Info("Starting Responder...");
             if (Tikhole.Forwarder != null) Tikhole.Forwarder.RecievedResponseData += Forwarder_RecievedResponseData;
             if (Tikhole.Matcher != null) Tikhole.Matcher.MatchesMatchedAndOrCommitted += Matcher_MatchesMatchedAndOrCommitted;
+        }
+        public void Dispose()
+        {
+            Logger.Info("Responder stopped.");
+            WaitForMatcherAndCommitter = true;
         }
         public void Respond(Span<byte> Data, IPEndPoint IPEndPoint)
         {
