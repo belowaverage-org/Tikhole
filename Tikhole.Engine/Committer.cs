@@ -67,6 +67,7 @@ namespace Tikhole.Engine
         private void Matcher_ResponseMatched(object? sender, ResponseMatchedEventArgs e)
         {
             if (ResponsesRecieved++ % TotalInstances != InstanceID) return;
+            bool added = false;
             if (!TcpClientSemephore.Wait((int)ComitterTimeoutMS))
             {
                 Logger.Warning("Committer queued for more than a " + ComitterTimeoutMS + "ms. Commit canceled.");
@@ -128,6 +129,7 @@ namespace Tikhole.Engine
                     reply = ListAdd(address, e.AddressListName, comment);
                     if (reply.Length == 2 && reply[1].StartsWith("=ret=*"))
                     {
+                        added = true;
                         Committed++;
                         CommitterTrackValue ctv = new()
                         {
@@ -159,6 +161,11 @@ namespace Tikhole.Engine
             finally
             {
                 TcpClientSemephore.Release();
+                if (added)
+                {
+                    if (Logger.VerboseMode) Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
+                    Thread.Sleep((int)ComitterDelayMS);
+                }
             }
         }
         private void TrackListSet(CommitterTrackKey Key, CommitterTrackValue Value)
@@ -198,17 +205,13 @@ namespace Tikhole.Engine
         private string[] ListAdd(IPAddress IPAddress, string List, string Comment)
         {
             (string v6, string cidr) = AddressBits(IPAddress);
-            string[] result = TcpClient.SendSentence([
+            return TcpClient.SendSentence([
                 "/ip" + v6 + "/firewall/address-list/add",
                 "=list=" + List,
                 "=comment=" + Comment,
                 "=address=" + IPAddress.ToString() + cidr,
                 "=timeout=" + ListTTL.ToString()
             ]);
-            if (Logger.VerboseMode) Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
-            Thread.Sleep((int)ComitterDelayMS);
-            return result;
-
         }
         private string[] ListSet(string ID, IPAddress IPAddress, string Comment)
         {
