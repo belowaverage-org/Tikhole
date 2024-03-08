@@ -1,0 +1,47 @@
+﻿@page "/Entries"
+@using System.Net
+@using System.Timers
+@using System.Diagnostics
+@using System.Collections
+@using global::Tikhole.Engine
+
+<PageTitle>📇 Entries</PageTitle>
+
+<h1>📇 Entries</h1>
+<p class="text-secondary">
+    <small>RouterOS IP List Entries</small>
+</p>
+<hr />
+<button @onclick="StateHasChanged" class="btn mt-1 mb-1 me-1 btn-dark">🔃 Refresh</button>
+<hr />
+<div class="row row-cols-1 row-cols-md-1 g-4 mb-3">
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body overflow-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">List</th>
+                            <th scope="col">IP</th>
+                            <th scope="col">Timeout</th>
+                            <th scope="col">RouterOS ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DictionaryEntry tlItem in Committer.TrackList)
+                        {
+                            CommitterTrackKey ctk = (CommitterTrackKey)tlItem.Key;
+                            CommitterTrackValue ctv = (CommitterTrackValue)tlItem.Value!;
+                            <tr>
+                                <td>@ctk.List</td>
+                                <td>@ctk.Address.ToString()</td>
+                                <td>@ctv.Timeout.ToString()</td>
+                                <td>@ctv.ID</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

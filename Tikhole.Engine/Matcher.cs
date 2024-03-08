@@ -37,6 +37,7 @@ namespace Tikhole.Engine
                 }
                 foreach (Rule rule in Rules)
                 {
+                    if (!rule.Enabled) continue;
                     List<string> matchedNames = new();
                     List<string> aliases = new();
                     List<IPAddress> addresses = new();
@@ -94,7 +95,7 @@ namespace Tikhole.Engine
     [Rule("Host File", "A file in UNIX hosts file format that Tikhole will use to match domain names against.")]
     public class RuleHashSetDownloadableHostFile : RuleHashSetDownloadable
     {
-        public RuleHashSetDownloadableHostFile(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name, Uri, UpdateTimer) { }
+        public RuleHashSetDownloadableHostFile(string Name, bool Enabled, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name, Enabled, Uri, UpdateTimer) { }
         private static Regex DomainNameMatcher = new("(?:^[0-9a-fA-F.:]*?\\s+)([a-zA-Z0-9.-]*)(?:$)", RegexOptions.Multiline | RegexOptions.Compiled);
         public override void UpdateList(object? a = null, object? b = null)
         {
@@ -124,12 +125,12 @@ namespace Tikhole.Engine
     }
     public abstract class RuleHashSetDownloadable : RuleHashSet
     {
-        [RuleField("File Download", "The file's URL to download from.")]
+        [RuleField("File Download", 2, "The file's URL to download from.")]
         public Uri Uri;
-        [RuleField("Update Timer", "The interval in seconds in which Tikhole will re-download the file.")]
+        [RuleField("Update Timer", 3, "The interval in seconds in which Tikhole will re-download the file.")]
         public System.Timers.Timer UpdateTimer;
         private protected static HttpClient HttpClient = new();
-        public RuleHashSetDownloadable(string Name, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name)
+        public RuleHashSetDownloadable(string Name, bool Enabled, Uri Uri, System.Timers.Timer UpdateTimer) : base(Name, Enabled)
         {
             this.Uri = Uri;
             this.UpdateTimer = UpdateTimer;
@@ -155,9 +156,9 @@ namespace Tikhole.Engine
     [Rule("Regular Expression", "Rule based off of a specified regular expression.")]
     public class RuleRegex : Rule
     {
-        [RuleField("Match", "The regular expression string that Tikhole will use to match domain names.")]
+        [RuleField("Match", 2, "The regular expression string that Tikhole will use to match domain names.")]
         public Regex Regex;
-        public RuleRegex(string Name, Regex Regex) : base(Name)
+        public RuleRegex(string Name, bool Enabled, Regex Regex) : base(Name, Enabled)
         {
             this.Regex = Regex;
         }
@@ -169,16 +170,19 @@ namespace Tikhole.Engine
     }
     public abstract class RuleHashSet : Rule
     {
-        protected RuleHashSet(string Name) : base(Name) { }
+        protected RuleHashSet(string Name, bool Enabled) : base(Name, Enabled) { }
         public HashSet<string> List = new();
     }
     public abstract class Rule : IDisposable
     {
-        [RuleField("Name", "The name of rule and IP list.")]
+        [RuleField("Name", 1, "The name of rule and IP list.")]
         public string Name;
-        public Rule(string Name)
+        [RuleField("Enabled", 0)]
+        public bool Enabled = true;
+        public Rule(string Name, bool Enabled)
         {
             this.Name = Name;
+            this.Enabled = Enabled;
         }
         public abstract void Dispose();
         public abstract bool Matches(string Hostname);
@@ -206,10 +210,12 @@ namespace Tikhole.Engine
     public class RuleFieldAttribute : Attribute
     {
         public string Name;
+        public uint Order;
         public string? Hint;
-        public RuleFieldAttribute(string Name, string? Hint = null)
+        public RuleFieldAttribute(string Name, uint Order = 0, string? Hint = null)
         {
             this.Name = Name;
+            this.Order = Order;
             this.Hint = Hint;
         }
     }

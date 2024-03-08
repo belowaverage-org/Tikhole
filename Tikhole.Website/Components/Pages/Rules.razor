@@ -33,7 +33,9 @@
         <span class="input-group-text"><strong>Name</strong></span>
         <span class="input-group-text">@rule.Name</span>
         <span class="input-group-text"><strong>Type</strong></span>
-        <span class="input-group-text flex-grow-1">@ra.Name</span>
+        <span class="input-group-text">@ra.Name</span>
+        <span class="input-group-text"><strong>Enabled</strong></span>
+        <span class="input-group-text flex-grow-1">@rule.Enabled</span>
         <button class="btn btn-outline-secondary" @onclick="() => MoveUp(rule)">⬆️</button>
         <button class="btn btn-outline-secondary" @onclick="() => MoveDown(rule)">⬇️</button>
         <a href="/Rules/@index" class="btn btn-outline-secondary">✏️</a>

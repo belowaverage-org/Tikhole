@@ -220,11 +220,17 @@ namespace Tikhole.Engine
         }
         private static void AddRuleRegex(this XmlNode Parent, XmlNode XRule, RuleRegex Rule)
         {
+            XmlAttribute xEnabled = Parent.OwnerDocument!.CreateAttribute("Enabled");
+            xEnabled.InnerText = Rule.Enabled.ToString();
             XRule.InnerText = Rule.Regex.ToString();
+            XRule.Attributes?.Append(xEnabled);
             Parent.AppendChild(XRule);
         }
         private static void AddRuleHostFile(this XmlNode Parent, XmlNode XRule, RuleHashSetDownloadableHostFile Rule)
         {
+            XmlAttribute xEnabled = Parent.OwnerDocument!.CreateAttribute("Enabled");
+            xEnabled.InnerText = Rule.Enabled.ToString();
+            XRule.Attributes?.Append(xEnabled);
             XmlAttribute xUpdateIntervalMS = Parent.OwnerDocument!.CreateAttribute("UpdateIntervalSeconds");
             xUpdateIntervalMS.InnerText = Rule.UpdateTimer.Interval.ToString();
             XRule.Attributes?.Append(xUpdateIntervalMS);
@@ -281,6 +287,7 @@ namespace Tikhole.Engine
             Rules.Add(
                 new RuleRegex(
                     Node.Name,
+                    bool.Parse(Node.Attributes!["Enabled"]!.InnerText),
                     new(Node.InnerText)
                 )
             );
@@ -290,10 +297,31 @@ namespace Tikhole.Engine
             Rules.Add(
                 new RuleHashSetDownloadableHostFile(
                     Node.Name,
+                    bool.Parse(Node.Attributes!["Enabled"]!.InnerText),
                     new(Node.InnerText),
                     new(double.Parse(Node.Attributes!["UpdateIntervalSeconds"]!.InnerText))
                 )
             );
+        }
+        private static string[] GetUniqueListsFromRules()
+        {
+            return Matcher.Rules.Select(Rule => Rule.Name).Distinct().ToArray();
+        }
+        public static string[] GetListsFromIPInEntryCache(IPAddress Address)
+        {
+            List<string> result = new();
+            foreach (string list in GetUniqueListsFromRules()) 
+            {
+                Committer.TrackListSemephore.Wait();
+                if (Committer.TrackList.Contains(new() { 
+                    Address = Address,
+                    List = list
+                })) {
+                    result.Add(list);
+                }
+                Committer.TrackListSemephore.Release();
+            }
+            return result.Distinct().ToArray();
         }
     }
 }

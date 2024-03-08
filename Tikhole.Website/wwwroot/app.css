@@ -56,6 +56,10 @@
     --bs-body-bg: #232323;
 }
 
+a {
+    color: inherit;
+}
+
 .table {
     font-size: 12px;
     color: inherit;

@@ -66,7 +66,8 @@
     }
     else
     {
-        foreach (FieldInfo field in EngineRuleType.GetFields().Reverse())
+        FieldInfo[] fields = EngineRuleType.GetFields().OrderBy(FieldInfo => FieldInfo?.GetCustomAttribute<RuleFieldAttribute>()?.Order).ToArray();
+        foreach (FieldInfo field in fields)
         {
             RuleFieldAttribute? fa = field.GetCustomAttribute<RuleFieldAttribute>();
             if (fa == null) continue;
@@ -79,6 +80,18 @@
                 @if (field.FieldType == typeof(Regex))
                 {
                     <InputTextArea rows="10" Value="@value" ValueExpression="() => value" ValueChanged="(value) => SetSetting(field.Name, value)" class="form-control" />
+                }
+                else if (field.FieldType == typeof(bool))
+                {
+                    bool bValue;
+                    if (!bool.TryParse(value, out bValue))
+                    {
+                        bValue = true;
+                        SetSetting(field.Name, "True");
+                    }
+                    <div class="form-check form-switch float-end">
+                        <InputCheckbox Value="@bValue" ValueExpression="() => bValue" ValueChanged="(value) => SetSetting(field.Name, value.ToString())" class="form-check-input" />
+                    </div>
                 }
                 else
                 {
@@ -149,6 +162,10 @@
             foreach (ParameterInfo param in engineRuleConstructor.GetParameters())
             {
                 if (param.Name == null) continue;
+                if (param.ParameterType == typeof(bool))
+                {
+                    parameters.Add(bool.Parse(Settings[param.Name]));
+                }
                 if (param.ParameterType == typeof(Regex))
                 {
                     parameters.Add(new Regex(Settings[param.Name]));
