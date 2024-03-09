@@ -12,6 +12,7 @@
 <button @onclick="StopTikhole" class="btn mt-1 mb-1 me-1 btn-dark">🛑 Stop Tikhole</button>
 <button @onclick="SyncLists" class="btn mt-1 mb-1 me-1 btn-dark">🟰 Sync Lists</button>
 <button @onclick="Shutdown" class="btn mt-1 mb-1 me-1 btn-dark">❌ Shutdown</button>
+<button @onclick="RunGC" class="btn mt-1 mb-1 me-1 btn-dark">🗑️ Garbage Collect</button>
 <hr />
 @if (Error != "")
 {
@@ -107,16 +108,16 @@
     private string Info { get; set; } = "";
     private async void RestartTikhole()
     {
-        Tikhole.RestartTikhole();
-        Info = "Tikhole engine restarted.";
+        _ = Task.Run(() =>Tikhole.RestartTikhole());
+        Info = "Tikhole engine restarting...";
         await Task.Delay(3000);
         Info = "";
         StateHasChanged();
     }
     private async void StopTikhole()
     {
-        Tikhole.StopTikhole();
-        Info = "Tikhole engine stopped.";
+        _ = Task.Run(() =>Tikhole.StopTikhole());
+        Info = "Tikhole engine stopping...";
         await Task.Delay(3000);
         Info = "";
         StateHasChanged();
@@ -129,9 +130,21 @@
         Info = "";
         StateHasChanged();
     }
-    private void Shutdown()
+    private async void RunGC()
+    {
+        _ = Task.Run(() => GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive | GCCollectionMode.Forced, true));
+        Info = "Running Garbage Collection now...";
+        await Task.Delay(3000);
+        Info = "";
+        StateHasChanged();
+    }
+    private async void Shutdown()
     {
         _ = Tikhole.WebApplication?.StopAsync();
+        Info = "Shutting down now...";
+        await Task.Delay(3000);
+        Info = "";
+        StateHasChanged();
     }
     private string CommitterEndpoint
     {

@@ -39,59 +39,73 @@ namespace Tikhole.Engine
     public class Director : IDisposable
     {
         private UdpClient Client = new UdpClient();
-        private Dictionary<UInt16, Request> Requests = new();
-        private SemaphoreSlim Semaphore = new(1);
+        private Dictionary<ushort, Request> Requests = new();
+        private SemaphoreSlim RequestSemaphore = new(1);
+        private SemaphoreSlim IDCounterSemaphore = new(1);
+        private ushort IDCounter = 0;
         public Director()
         {
-            Task.Run(() => {
+            new Task(() => {
                 while (Client.Client.Poll(-1, SelectMode.SelectRead))
                 {
                     IPEndPoint? endpoint = null;
                     byte[] received = Client.Receive(ref endpoint);
-                    UInt16 ID = GetID(received);
-                    Semaphore.Wait();
+                    ushort ID = GetID(received);
+                    RequestSemaphore.Wait();
                     if (Requests.ContainsKey(ID))
                     {
                         Requests[ID].Response = received;
                         Requests[ID].WaitHandle?.Set();
                     }
-                    Semaphore.Release();
+                    RequestSemaphore.Release();
                 }
-            });
+            }, TaskCreationOptions.LongRunning).Start();
         }
         public void Dispose()
         {
-            Semaphore.Dispose();
+            RequestSemaphore.Dispose();
+            IDCounterSemaphore.Dispose();
             Client.Dispose();
         }
         public byte[]? Forward(Memory<byte> Request)
         {
-            UInt16 ID = GetID(Request);
-            EventWaitHandle waitHandle = new(false, EventResetMode.ManualReset);
-            Semaphore.Wait();
+            IDCounterSemaphore.Wait();
+            ushort ID = IDCounter++;
+            IDCounterSemaphore.Release();
+            RequestSemaphore.Wait();
             if (Requests.ContainsKey(ID))
             {
-                Semaphore.Release();
+                RequestSemaphore.Release();
                 return null;
             }
-            Requests.Add(ID, new() { WaitHandle = waitHandle });
-            Semaphore.Release();
+            EventWaitHandle waitHandle = new(false, EventResetMode.ManualReset);
+            Requests.Add(ID, new() { WaitHandle = waitHandle, OriginalID = GetID(Request) });
+            RequestSemaphore.Release();
+            SetID(Request, ID);
             Client.Send(Request.Span, Forwarder.DNSServer);
             waitHandle.WaitOne(1000);
-            Semaphore.Wait();
             waitHandle.Dispose();
+            RequestSemaphore.Wait();
             byte[]? response = Requests[ID].Response;
+            SetID(response, Requests[ID].OriginalID);
             Requests.Remove(ID);
-            Semaphore.Release();
+            RequestSemaphore.Release();
             return response;
         }
-        private UInt16 GetID(Memory<byte> Request)
+        private ushort GetID(Memory<byte> DNSPacket)
         {
-            return BitConverter.ToUInt16(Request.Span);
+            return BitConverter.ToUInt16([DNSPacket.Span[1], DNSPacket.Span[0]]);
+        }
+        private void SetID(Memory<byte> DNSPacket, ushort ID)
+        {
+            byte[] bytes = BitConverter.GetBytes(ID);
+            DNSPacket.Span[0] = bytes[1];
+            DNSPacket.Span[1] = bytes[0];
         }
         private record Request
         {
             public EventWaitHandle? WaitHandle;
+            public ushort OriginalID;
             public byte[]? Response;
         }
     }

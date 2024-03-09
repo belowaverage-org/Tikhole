@@ -161,11 +161,11 @@ namespace Tikhole.Engine
             finally
             {
                 TcpClientSemephore.Release();
-                if (added)
+                /*if (added)
                 {
                     if (Logger.VerboseMode) Logger.Verbose("New entry in IP list, sleeping for " + ComitterDelayMS + "ms for RouterOS to catch up.");
                     Thread.Sleep((int)ComitterDelayMS);
-                }
+                }*/
             }
         }
         private void TrackListSet(CommitterTrackKey Key, CommitterTrackValue Value)
