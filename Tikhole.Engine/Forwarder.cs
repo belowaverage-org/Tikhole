@@ -23,7 +23,7 @@ namespace Tikhole.Engine
         {
             if (Logger.VerboseMode) Logger.Verbose("Recieved request from " + e.IPEndPoint.ToString() + ", forwarding to " + DNSServer.ToString() + "...");
             byte[]? response = Director.Forward(e.Data);
-            if (response == null)
+            if (response == null || response.Length == 0)
             {
                 Logger.Info("Request from " + e.IPEndPoint.ToString() + " timed out or experienced an error when sent to " + DNSServer.ToString() + ".");
                 return;
@@ -98,6 +98,7 @@ namespace Tikhole.Engine
         }
         private void SetID(Memory<byte> DNSPacket, ushort ID)
         {
+            if (DNSPacket.Length < 2) return;
             byte[] bytes = BitConverter.GetBytes(ID);
             DNSPacket.Span[0] = bytes[1];
             DNSPacket.Span[1] = bytes[0];
